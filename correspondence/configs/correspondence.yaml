@@ -17,9 +17,9 @@ folder: deploy
 batch_size: 1
 num_workers: 1
 augment_noise: 0.002
-data_root: /path/to/4DMatch
+data_root: data
 split: {
-  "train": split/train,
-  "val": split/4DLoMatch,
-  "test": split/4DMatch
+  "train": split2/train,
+  "val": split2/val,
+  "test": split2/test
 }

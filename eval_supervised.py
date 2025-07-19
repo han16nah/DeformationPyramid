@@ -1,5 +1,6 @@
 from model.geometry import *
 import os
+from pathlib import Path
 import torch
 import sys
 sys.path.append("correspondence")
@@ -75,7 +76,8 @@ if __name__ == "__main__":
     from correspondence.datasets.dataloader import get_dataloader
 
 
-    splits = [ '4DMatch-F', '4DLoMatch-F' ]
+    # splits = [ '4DMatch-F', '4DLoMatch-F' ]
+    splits = ['test']
 
 
     for split in splits:
@@ -83,7 +85,6 @@ if __name__ == "__main__":
         config.split['test'] = split
 
         stats_meter = None
-        
         test_set = _4DMatch(config, 'test', data_augmentation=False)
         test_loader, _ = get_dataloader(test_set, config, shuffle=False)
 
@@ -95,7 +96,7 @@ if __name__ == "__main__":
 
         for c_iter in tqdm(range(num_iter)):
 
-            inputs = c_loader_iter.next()
+            inputs = next(c_loader_iter)
 
 
             for k, v in inputs.items():
@@ -126,7 +127,7 @@ if __name__ == "__main__":
 
             """compute overlap mask"""
             overlap = torch.zeros(len(src_pcd))
-            overlap[correspondence[:, 0]] = 1
+            overlap[correspondence[:, 0].long()] = 1
             overlap = overlap.bool()
             overlap =  overlap.to(config.device)
 
@@ -142,6 +143,14 @@ if __name__ == "__main__":
 
                 for key, value in iter.items():
                     timer.tictoc(key, value)
+                
+                # save data to .npz
+                np.savez(Path(config['snapshot_dir']) / f'{benchmark}_{i}_out.npz',
+                         s_pc=src_pcd.astype(np.float32),
+                         t_pc=tgt_pcd.astype(np.float32),
+                         s2t_flow=flow.cpu().numpy(),
+                         s2t_flow_gt=flow_gt.cpu().numpy(),
+                         warped_pcd=warped_pcd.cpu().numpy())
 
 
             elif config.deformation_model == "ED": # Lepard+NICP

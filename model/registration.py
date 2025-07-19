@@ -15,7 +15,7 @@ from .loss import  arap_cost, landmark_cost, compute_truncated_chamfer_distance,
 from .nets import *
 
 sys.path.append("../")
-from utils.vis import visualize_pcds
+from utils.vis import visualize_pcds, visualize_flows
 
 
 BCE = nn.BCELoss()
@@ -255,6 +255,7 @@ class Registration():
         warped_pcd, data = NDP.warp(src_pcd)
         if visualize:
              visualize_pcds(tgt_pcd=tgt_pcd, warped_pcd=warped_pcd, rigidity=data[level][1])
+             visualize_flows(src_pcd, warped_pcd, tgt_pcd)
 
         warped_pcd = warped_pcd + tgt_mean
 

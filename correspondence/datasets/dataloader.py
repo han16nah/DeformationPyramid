@@ -6,6 +6,7 @@ import cpp_wrappers.cpp_neighbors.radius_neighbors as cpp_neighbors
 from datasets._3dmatch import _3DMatch
 from datasets._4dmatch import _4DMatch
 from datasets._4dmatch_multiview import _4DMatch_Multiview
+from datasets._plants import _Plants
 from datasets.utils import blend_scene_flow, multual_nn_correspondence
 from lib.visualization import *
 
@@ -652,6 +653,10 @@ def get_datasets(config):
         train_set = _4DMatch_Multiview(config, 'train', data_augmentation=True)
         val_set = _4DMatch_Multiview(config, 'val', data_augmentation=False)
         test_set = _4DMatch_Multiview(config, 'test', data_augmentation=False)
+    elif(config.dataset == 'plants'):
+        train_set = _Plants(config, 'train', data_augmentation=True)
+        val_set = _Plants(config, 'val', data_augmentation=False)
+        test_set = _Plants(config, 'test', data_augmentation=False)
     else:
         raise NotImplementedError
 

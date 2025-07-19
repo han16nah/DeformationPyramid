@@ -1,10 +1,12 @@
 from model.geometry import *
 import os
+from pathlib import Path
 import torch
 from tqdm import tqdm
 import argparse
 # from data._4DMatch import _4DMatch
 from correspondence.datasets._4dmatch import _4DMatch
+from correspondence.datasets._plants import _Plants
 from model.registration import Registration
 import yaml
 from easydict import EasyDict as edict
@@ -12,6 +14,7 @@ from model.loss import compute_flow_metrics
 from utils.benchmark_utils import setup_seed
 from utils.utils import Logger, AverageMeter
 from utils.tiktok import Timers
+import laspy
 
 
 def join(loader, node):
@@ -21,6 +24,20 @@ yaml.add_constructor('!join', join)
 
 setup_seed(0)
 
+
+def write_las(array, filename):
+    # create header
+    header = laspy.LasHeader(point_format=3, version="1.2")
+    header.offset = np.array([0, 0, 0])
+    header.scales = np.array([0.00025, 0.00025, 0.00025])
+    # Create a new las file
+    outfile = laspy.LasData(header)
+    outfile.header.max = [np.max(array[:,0]), np.max(array[:,1]), np.max(array[:,2])]
+    outfile.header.min = [np.min(array[:,0]), np.min(array[:,1]), np.min(array[:,2])]
+    outfile.x = array[:, 0]
+    outfile.y = array[:, 1]
+    outfile.z = array[:, 2]
+    outfile.write(filename)
 
 
 if __name__ == "__main__":
@@ -56,13 +73,15 @@ if __name__ == "__main__":
     model = Registration(config)
     timer = Timers()
 
-    splits = ['4DMatch-F', '4DLoMatch-F']
+    # splits = ['4DMatch-F', '4DLoMatch-F']
+    splits = ['test']
 
     for benchmark in splits:
 
         config.split['test'] = benchmark
 
-        D = _4DMatch( config, 'test', data_augmentation=False)
+        # D = _4DMatch( config, 'test', data_augmentation=False)
+        D = _Plants(config, 'test', data_augmentation=False)
         logger = Logger(  os.path.join( config.snapshot_dir, benchmark+".log" ))
 
         stats_meter = None
@@ -93,6 +112,18 @@ if __name__ == "__main__":
                 timer.toc("registration")
                 flow = warped_pcd - model.src_pcd
 
+                # save warped pc to .npz and .laz, save flow to .npz
+                np.savez(Path(config['snapshot_dir']) / f'{benchmark}_{i}_out.npz',
+                         s_pc=src_pcd.astype(np.float32),
+                         t_pc=tgt_pcd.astype(np.float32),
+                         s2t_flow=flow.cpu().numpy(),
+                         s2t_flow_gt=flow_gt.cpu().numpy(),
+                         warped_pcd=warped_pcd.cpu().numpy())
+
+                #np.savez(Path(config['snapshot_dir']) / f'{benchmark}_{i}_warped_pc.npz', warped_pcd.cpu().numpy())
+                #np.savez(Path(config['snapshot_dir']) / f'{benchmark}_{i}_src_pc.npz', model.src_pcd.cpu().numpy())
+                #write_las(warped_pcd.cpu().numpy(), Path(config['snapshot_dir']) / f'{benchmark}_{i}_warped_pc.laz')
+                #write_las(model.tgt_pcd.cpu().numpy(), Path(config['snapshot_dir']) / f'{benchmark}_{i}_tgt_pc.laz')
 
             elif config.deformation_model in ["NSFP", "Nerfies", "Sinkhorn"]:
 
@@ -142,8 +173,6 @@ if __name__ == "__main__":
             for key, value in metric_info.items():
                 stats_meter[key].update(value)
 
-
-
         # note down flow scores on a benchmark
         message = f'{i}/{len(D)}: '
         for key, value in stats_meter.items():
@@ -152,8 +181,8 @@ if __name__ == "__main__":
         print( "score on ", benchmark, '\n', message)
 
 
-    # note down average time cost
+    """# note down average time cost
     print('time cost average')
     for ele in timer.get_strings():
         logger.write(ele + '\n')
-        print(ele)
+        print(ele)"""

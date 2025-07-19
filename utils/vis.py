@@ -46,6 +46,36 @@ def visualize_pcds(src_pcd=None, tgt_pcd=None, warped_pcd=None, rigidity=None):
 
     mlab.show()
 
+
+def visualize_flows(src_pcd, warped_pcd, tgt_pcd):
+    import mayavi.mlab as mlab
+    fig = mlab.figure(size=(1000, 1000), bgcolor=(1, 1, 1))
+    c_black = (0, 0, 0)
+    c_red = (224. / 255., 0 / 255., 125 / 255.)
+    c_pink = (224. / 255., 75. / 255., 232. / 255.)
+    c_blue = (0. / 255., 0. / 255., 255. / 255.)
+    c_green = (0. / 255., 255. / 255., 0. / 255.)
+
+    
+    if src_pcd is not None:
+        if type(src_pcd) == torch.Tensor:
+            src_pcd = src_pcd.detach().cpu().numpy()
+        mlab.points3d(src_pcd[ :, 0] , src_pcd[ :, 1], src_pcd[:,  2], scale_factor=0.05 , color=c_red)
+    if tgt_pcd is not None:
+        if type(tgt_pcd) == torch.Tensor:
+            tgt_pcd = tgt_pcd.detach().cpu().numpy()
+        mlab.points3d(tgt_pcd[ :, 0] , tgt_pcd[  :,1], tgt_pcd[  :,2], scale_factor=0.05 , color=c_black)
+    if warped_pcd is not None:
+        if type(warped_pcd) == torch.Tensor:
+            warped_pcd = warped_pcd.detach().cpu().numpy()
+        mlab.points3d(warped_pcd[ :, 0] , warped_pcd[ :, 1], warped_pcd[:,  2], scale_factor=0.05 , color=c_green)
+    
+    flow = warped_pcd - src_pcd
+    mlab.quiver3d(src_pcd[:, 0], src_pcd[ :, 1], src_pcd[ :, 2],
+                flow[:, 0] , flow[:, 1] , flow[:, 2], scale_factor=1, color=(0, 0, 0))
+    mlab.show()
+
+
 def visualize_pcds_list(pcd_list ):
 
     import mayavi.mlab as mlab
