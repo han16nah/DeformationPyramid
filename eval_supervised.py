@@ -145,9 +145,9 @@ if __name__ == "__main__":
                     timer.tictoc(key, value)
                 
                 # save data to .npz
-                np.savez(Path(config['snapshot_dir']) / f'{benchmark}_{i}_out.npz',
-                         s_pc=src_pcd.astype(np.float32),
-                         t_pc=tgt_pcd.astype(np.float32),
+                np.savez(Path(config['snapshot_dir']) / f'{split}_{c_iter}_out.npz',
+                         s_pc=src_pcd.cpu().numpy(),
+                         t_pc=tgt_pcd.cpu().numpy(),
                          s2t_flow=flow.cpu().numpy(),
                          s2t_flow_gt=flow_gt.cpu().numpy(),
                          warped_pcd=warped_pcd.cpu().numpy())
