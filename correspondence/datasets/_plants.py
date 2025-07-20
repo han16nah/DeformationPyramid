@@ -83,7 +83,7 @@ class _Plants(Dataset):
         cam_intrin = None
 
         # if we get too many points, we do some downsampling
-        if (src_pcd.shape[0] > self.max_points and tgt_pcd.shape[0] > self.max_points):
+        if src_pcd.shape[0] > self.max_points:
             print("Downsampling...")
             pts_max = min(src_pcd.shape[0], tgt_pcd.shape[0])
             sub_idx_src = np.random.permutation(pts_max)[:self.max_points]
