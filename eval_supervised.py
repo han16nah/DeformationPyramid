@@ -73,6 +73,7 @@ if __name__ == "__main__":
 
 
     from correspondence.datasets._4dmatch import _4DMatch
+    from correspondence.datasets._plants import _Plants
     from correspondence.datasets.dataloader import get_dataloader
 
 
@@ -85,7 +86,7 @@ if __name__ == "__main__":
         config.split['test'] = split
 
         stats_meter = None
-        test_set = _4DMatch(config, 'test', data_augmentation=False)
+        test_set = _Plants(config, 'test', data_augmentation=False)
         test_loader, _ = get_dataloader(test_set, config, shuffle=False)
 
 
@@ -143,7 +144,8 @@ if __name__ == "__main__":
 
                 for key, value in iter.items():
                     timer.tictoc(key, value)
-                
+
+                print(f"Saving file to {Path(config['snapshot_dir']) / f'{split}_{c_iter}_out.npz'}")
                 # save data to .npz
                 np.savez(Path(config['snapshot_dir']) / f'{split}_{c_iter}_out.npz',
                          s_pc=src_pcd.cpu().numpy(),
