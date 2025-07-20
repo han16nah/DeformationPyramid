@@ -105,7 +105,8 @@ class _Plants(Dataset):
                 sub_idx_src = np.arange(src_pcd.shape[0])
         
         src_pcd_deformed = src_pcd + s2t_flow
-        correspondences = find_new_corr(correspondences, sub_idx_src, sub_idx_tgt)
+        if downsampled:
+            correspondences = find_new_corr(correspondences, sub_idx_src, sub_idx_tgt)
 
         if debug:
             import mayavi.mlab as mlab
