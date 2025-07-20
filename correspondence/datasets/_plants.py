@@ -91,7 +91,6 @@ class _Plants(Dataset):
             sub_idx_src = np.random.permutation(pts_max)[:self.max_points]
             src_pcd = src_pcd[sub_idx_src]
             s2t_flow = s2t_flow[sub_idx_src]
-            src_pcd_deformed = src_pcd_deformed[sub_idx_src]
             # indices of target - no filtering
             sub_idx_tgt = np.arange(tgt_pcd.shape[0])
 
