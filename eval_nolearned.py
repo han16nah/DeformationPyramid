@@ -98,7 +98,7 @@ if __name__ == "__main__":
 
             """obtain overlap mask"""
             overlap = np.zeros(len(src_pcd))
-            overlap[correspondence[:, 0].long()] = 1
+            overlap[correspondence[:, 0].astype(int)] = 1
             overlap = overlap.astype(bool)
             overlap = torch.from_numpy(overlap).to(config.device)
 
