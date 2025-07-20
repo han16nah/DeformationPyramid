@@ -82,9 +82,11 @@ class _Plants(Dataset):
         depth_paths = None
         cam_intrin = None
 
+        downsampled = False
         # if we get too many points, we do some downsampling
         if src_pcd.shape[0] > self.max_points:
             print("Downsampling...")
+            downsampled = True
             pts_max = min(src_pcd.shape[0], tgt_pcd.shape[0])
             sub_idx_src = np.random.permutation(pts_max)[:self.max_points]
             src_pcd = src_pcd[sub_idx_src]
@@ -92,10 +94,15 @@ class _Plants(Dataset):
             correspondences = correspondences[correspondences[:, 0].isin(sub_idx_src)]
             #correspondences = correspondences[idx]
             src_pcd_deformed = src_pcd_deformed[sub_idx_src]
+            # indices of target - no filtering
+            sub_idx_tgt = np.arange(tgt_pcd.shape[0])
+
         if (tgt_pcd.shape[0] > self.max_points):
             print("Downsampling...")
             sub_idx_tgt = np.random.permutation(tgt_pcd.shape[0])[:self.max_points]
             tgt_pcd = tgt_pcd[sub_idx_tgt]
+            if not downsampled:
+                sub_idx_src = np.arange(src_pcd.shape[0])
         
         src_pcd_deformed = src_pcd + s2t_flow
         correspondences = find_new_corr(correspondences, sub_idx_src, sub_idx_tgt)
