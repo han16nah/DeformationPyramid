@@ -9,6 +9,19 @@ from scipy.spatial.transform import Rotation
 from torch.utils.data import Dataset
 
 
+def find_new_corr(corr, mask_x, mask_y):
+    old_to_new_x = {old_idx: new_idx for new_idx, old_idx in enumerate(np.flatnonzero(mask_x))}
+    old_to_new_y = {old_idx: new_idx for new_idx, old_idx in enumerate(np.flatnonzero(mask_y))}
+
+    # Step 2: Filter and remap correspondences
+    new_corr = []
+    for i, j in corr:
+        if i in old_to_new_x and j in old_to_new_y:
+            new_corr.append([old_to_new_x[i], old_to_new_y[j]])
+
+    return np.array(new_corr, dtype=int)
+
+
 class _Plants(Dataset):
 
     def __init__(self, config, split, data_augmentation=True):
@@ -61,7 +74,6 @@ class _Plants(Dataset):
             src_pcd = entry['s_pc']
             tgt_pcd = entry['t_pc']
             correspondences = entry['correspondences']
-            src_pcd_deformed = src_pcd + s2t_flow
             if "metric_index" in entry:
                 metric_index = entry['metric_index'].squeeze()
             else:
@@ -74,12 +86,19 @@ class _Plants(Dataset):
         if (src_pcd.shape[0] > self.max_points and tgt_pcd.shape[0] > self.max_points):
             print("Downsampling...")
             pts_max = min(src_pcd.shape[0], tgt_pcd.shape[0])
-            sub_idx = np.random.permutation(pts_max)[:self.max_points]
-            src_pcd = src_pcd[sub_idx]
+            sub_idx_src = np.random.permutation(pts_max)[:self.max_points]
+            src_pcd = src_pcd[sub_idx_src]
+            s2t_flow = s2t_flow[sub_idx_src]
+            correspondences = correspondences[correspondences[:, 0].isin(sub_idx_src)]
             #correspondences = correspondences[idx]
-            src_pcd_deformed = src_pcd_deformed[sub_idx]
-            tgt_pcd = tgt_pcd[sub_idx]
-
+            src_pcd_deformed = src_pcd_deformed[sub_idx_src]
+        if (tgt_pcd.shape[0] > self.max_points):
+            print("Downsampling...")
+            sub_idx_tgt = np.random.permutation(tgt_pcd.shape[0])[:self.max_points]
+            tgt_pcd = tgt_pcd[sub_idx_tgt]
+        
+        src_pcd_deformed = src_pcd + s2t_flow
+        correspondences = find_new_corr(correspondences, sub_idx_src, sub_idx_tgt)
 
         if debug:
             import mayavi.mlab as mlab
