@@ -53,7 +53,19 @@ class VolumetricPositionEncoding(nn.Module):
         '''
         bsize, npoint, _ = XYZ.shape
 
+        if npoint == 0:
+            print(f"[VolumetricPositionEncoding] Warning: input XYZ has no points, returning zeros. Shape: {XYZ.shape}")
+            # Either skip the forward or return zeros
+            if self.pe_type == 'sinusoidal':
+                return torch.zeros((bsize, 0, self.feature_dim), device=XYZ.device)
+            elif self.pe_type == 'rotary':
+                return torch.zeros((bsize, 0, self.feature_dim // 3, 2), device=XYZ.device)
+
         vox = self.voxelize( XYZ)
+        # handle cases where voxelisation results in empty tensors
+        if vox.shape[1] == 0:
+            raise ValueError(f"[voxelize()] returned shape {vox.shape}, input was {XYZ.shape}")
+        
         x_position, y_position, z_position = vox[..., 0:1], vox[...,1:2], vox[...,2:3]
         div_term = torch.exp( torch.arange(0, self.feature_dim // 3, 2, dtype=torch.float, device=XYZ.device) *  (-math.log(10000.0) / (self.feature_dim // 3)))
         div_term = div_term.view( 1,1, -1) # [1, 1, d//6]
