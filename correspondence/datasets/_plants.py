@@ -104,7 +104,13 @@ class _Plants(Dataset):
         src_pcd_deformed = src_pcd + s2t_flow
         if downsampled:
             correspondences = find_new_corr(correspondences, sub_idx_src, sub_idx_tgt)
+            # assert that none of the important variables are empty
+            assert src_pcd.shape[0] > 0, "Source point cloud is empty after downsampling."
+            assert tgt_pcd.shape[0] > 0, "Target point cloud is empty after downsampling."
+            assert correspondences.shape[0] > 0, "Correspondences are empty after downsampling."
+            assert s2t_flow.shape[0] > 0, "Scene flow is empty after downsampling."
 
+        
         if debug:
             import mayavi.mlab as mlab
             c_red = (224. / 255., 0 / 255., 125 / 255.)
