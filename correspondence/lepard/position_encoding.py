@@ -54,12 +54,12 @@ class VolumetricPositionEncoding(nn.Module):
         bsize, npoint, _ = XYZ.shape
 
         if npoint == 0:
-            print(f"[VolumetricPositionEncoding] Warning: input XYZ has no points, returning zeros. Shape: {XYZ.shape}")
+            print(f"[VolumetricPositionEncoding - Lepard] Warning: input XYZ has no points, returning zeros. Shape: {XYZ.shape}")
             # Either skip the forward or return zeros
             if self.pe_type == 'sinusoidal':
                 return torch.zeros((bsize, 0, self.feature_dim), device=XYZ.device)
             elif self.pe_type == 'rotary':
-                return torch.zeros((bsize, 0, self.feature_dim // 3, 2), device=XYZ.device)
+                return torch.zeros((bsize, 0, self.feature_dim, 2), device=XYZ.device)
 
         vox = self.voxelize( XYZ)
         # handle cases where voxelisation results in empty tensors
