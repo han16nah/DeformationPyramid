@@ -59,7 +59,7 @@ iter_size: 1
 
 #dataset:
 dataset: plants
-folder: deploy
+folder: plants_S1-single
 batch_size: 2  # 8
 num_workers: 0  # 16
 augment_noise: 0.002
