@@ -102,7 +102,7 @@ if __name__ == "__main__":
 
             for k, v in inputs.items():
                 if type(v) == list:
-                    inputs [k] = [item.to(config.device) for item in v]
+                    inputs [k] = [item.to(config.device) for item in v if type(item) != str]
                 elif type(v) in [dict, float, type(None), np.ndarray]:
                     pass
                 else:
@@ -145,14 +145,15 @@ if __name__ == "__main__":
                 for key, value in iter.items():
                     timer.tictoc(key, value)
 
-                print(f"Saving file to {Path(config['snapshot_dir']) / f'{split}_{c_iter}_out.npz'}")
+                """fstem = Path(inputs['entry_list'][0]).stem
+                print(f"Saving file to {Path(config['snapshot_dir']) / f'{fstem}_out.npz'}")
                 # save data to .npz
-                np.savez(Path(config['snapshot_dir']) / f'{split}_{c_iter}_out.npz',
+                np.savez(Path(config['snapshot_dir']) / f'{fstem}_out.npz',
                          s_pc=src_pcd.cpu().numpy(),
                          t_pc=tgt_pcd.cpu().numpy(),
                          s2t_flow=flow.cpu().numpy(),
                          s2t_flow_gt=flow_gt.cpu().numpy(),
-                         warped_pcd=warped_pcd.cpu().numpy())
+                         warped_pcd=warped_pcd.cpu().numpy())"""
 
 
             elif config.deformation_model == "ED": # Lepard+NICP

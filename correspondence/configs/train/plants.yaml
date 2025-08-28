@@ -1,5 +1,5 @@
 matcher_config: './configs/lepard.yaml'
-matcher_weights: './pretrained/lepard_weights.pth'
+matcher_weights: './pretrained/plants_S1-single_weights.pth'
 
 
 model:
@@ -63,11 +63,11 @@ folder: deploy
 batch_size: 2  # 8
 num_workers: 0  # 16
 augment_noise: 0.002
-data_root: ../data/
+data_root: ../data/plants_S1-single
 split: {
-  "train": split2/train,
-  "val": split2/val,
-  "test": split2/test
+  "train": partitioned5/train,
+  "val": partitioned5/val,
+  "test": partitioned5/test
 }
 
 # change params for test

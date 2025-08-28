@@ -175,7 +175,7 @@ class Trainer(object):
             # for gpu_div_i, _ in enumerate(inputs):
             for k, v in inputs.items():
                 if type(v) == list:
-                    inputs [k] = [item.to(self.device) for item in v]
+                    inputs [k] = [item.to(self.device) for item in v if type(item) != str]
                 elif type(v) in [ dict, float, type(None), np.ndarray]:
                     pass
                 else:

@@ -1,0 +1,25 @@
+matcher_config: 'correspondence/configs/lepard.yaml'
+matcher_weights: 'correspondence/pretrained/plants_S1-single_weights.pth'
+
+outlier_rejection_config: 'correspondence/configs/outlier_rejection.yaml'
+outlier_rejection_weights: 'correspondence/pretrained/outlier_weights.pth'
+
+
+mode: test
+gpu_mode:  True
+
+exp_dir: None
+
+
+#dataset:
+dataset: 4dmatch
+folder: deploy
+batch_size: 1
+num_workers: 1
+augment_noise: 0.002
+data_root: data
+split: {
+  "train": split2/train,
+  "val": split2/val,
+  "test": split2/test
+}

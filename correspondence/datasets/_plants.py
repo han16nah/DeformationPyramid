@@ -39,9 +39,9 @@ class _Plants(Dataset):
 
         self.rot_factor = 1.
         self.augment_noise = config.augment_noise
-        self.max_points = 30000  # 30000
+        self.max_points = 1000000  # 30000
 
-        self.overlap_radius = 0.0375
+        # self.overlap_radius = 0.0375  # does not seem to be needed for this dataset
 
         # self.cache = {}
         # self.cache_size = 30000
@@ -163,7 +163,4 @@ class _Plants(Dataset):
 
 
         #R * ( Ps + flow ) + t  = Pt
-        return src_pcd, tgt_pcd, src_feats, tgt_feats, correspondences, rot, trans, s2t_flow, metric_index, depth_paths, cam_intrin
-
-
-
+        return self.entries[index], src_pcd, tgt_pcd, src_feats, tgt_feats, correspondences, rot, trans, s2t_flow, metric_index, depth_paths, cam_intrin

@@ -362,7 +362,7 @@ def collate_fn_4dmatch_multiview_sequence(multiview_data, config, neighborhood_l
 
 def collate_fn_4dmatch(pairwise_data, config, neighborhood_limits ):
 
-
+    entry_list = []
 
     batched_points_list = []
     batched_features_list = []
@@ -382,12 +382,13 @@ def collate_fn_4dmatch(pairwise_data, config, neighborhood_limits ):
 
 
     # for ind in range ( len(pairwise_data) ) :
-    for ind, ( src_pcd, tgt_pcd, src_feats, tgt_feats, correspondences, rot, trn, s2t_flow, metric_index, depth_paths, cam_intrin) in enumerate(pairwise_data):
+    for ind, (entry, src_pcd, tgt_pcd, src_feats, tgt_feats, correspondences, rot, trn, s2t_flow, metric_index, depth_paths, cam_intrin) in enumerate(pairwise_data):
         #            src_pcd, tgt_pcd, src_feats, tgt_feats, correspondences, rot, trans, s2t_flow, metric_index
 
 
         # src_feats = np.ones_like(src_pcd[:, :1]).astype(np.float32)
         # tgt_feats = np.ones_like(tgt_pcd[:, :1]).astype(np.float32)
+        entry_list.append(entry)
 
         src_pcd_list.append(torch.from_numpy(src_pcd))
         tgt_pcd_list.append(torch.from_numpy(tgt_pcd))
@@ -578,6 +579,7 @@ def collate_fn_4dmatch(pairwise_data, config, neighborhood_limits ):
 
 
     dict_inputs = {
+        'entry_list': entry_list,
         'src_pcd_list': src_pcd_list,
         'tgt_pcd_list': tgt_pcd_list,
         'points': input_points,
