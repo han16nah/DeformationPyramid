@@ -14,7 +14,4 @@ data/
 */pretrained/
 __pycache__/
 snapshot/
-
-
-
-
+*.out
