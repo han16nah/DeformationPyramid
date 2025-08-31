@@ -39,6 +39,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', type=str, help= 'Path to the config file.')
     parser.add_argument('--visualize', action = 'store_true', help= 'visualize the registration results')
+    parser.add_argument('--write', action = 'store_true', help= 'write the registration results to .npz')
     args = parser.parse_args()
     with open(args.config,'r') as f:
         config = yaml.load(f, Loader=yaml.Loader)
@@ -145,15 +146,16 @@ if __name__ == "__main__":
                 for key, value in iter.items():
                     timer.tictoc(key, value)
 
-                """fstem = Path(inputs['entry_list'][0]).stem
-                print(f"Saving file to {Path(config['snapshot_dir']) / f'{fstem}_out.npz'}")
-                # save data to .npz
-                np.savez(Path(config['snapshot_dir']) / f'{fstem}_out.npz',
-                         s_pc=src_pcd.cpu().numpy(),
-                         t_pc=tgt_pcd.cpu().numpy(),
-                         s2t_flow=flow.cpu().numpy(),
-                         s2t_flow_gt=flow_gt.cpu().numpy(),
-                         warped_pcd=warped_pcd.cpu().numpy())"""
+                if args.write:
+                    fstem = Path(inputs['entry_list'][0]).stem
+                    print(f"Saving file to {Path(config['snapshot_dir']) / f'{fstem}_out.npz'}")
+                    # save data to .npz
+                    np.savez(Path(config['snapshot_dir']) / f'{fstem}_out.npz',
+                            s_pc=src_pcd.cpu().numpy(),
+                            t_pc=tgt_pcd.cpu().numpy(),
+                            s2t_flow=flow.cpu().numpy(),
+                            s2t_flow_gt=flow_gt.cpu().numpy(),
+                            warped_pcd=warped_pcd.cpu().numpy())
 
 
             elif config.deformation_model == "ED": # Lepard+NICP
