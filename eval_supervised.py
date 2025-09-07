@@ -104,6 +104,8 @@ if __name__ == "__main__":
             for k, v in inputs.items():
                 if type(v) == list:
                     inputs [k] = [item.to(config.device) for item in v if type(item) != str]
+                    if k == "entry_list":
+                        entry_list = v[0]
                 elif type(v) in [dict, float, type(None), np.ndarray]:
                     pass
                 else:
@@ -147,7 +149,7 @@ if __name__ == "__main__":
                     timer.tictoc(key, value)
 
                 if args.write:
-                    fstem = Path(inputs['entry_list'][0]).stem
+                    fstem = Path(entry_list).stem
                     print(f"Saving file to {Path(config['snapshot_dir']) / f'{fstem}_out.npz'}")
                     # save data to .npz
                     np.savez(Path(config['snapshot_dir']) / f'{fstem}_out.npz',
