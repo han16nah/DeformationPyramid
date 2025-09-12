@@ -84,7 +84,7 @@ if __name__ == "__main__":
 
     for split in splits:
 
-        config.split['test'] = split
+        #config.split['test'] = split
 
         stats_meter = None
         test_set = _Plants(config, 'test', data_augmentation=False)
