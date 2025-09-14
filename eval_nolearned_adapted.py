@@ -114,7 +114,11 @@ if __name__ == "__main__":
                 model.load_pcds(src_pcd, tgt_pcd)
 
                 timer.tic("registration")
-                warped_pcd, iter_cnt, timer = model.register(visualize=args.visualize, timer = timer)
+                try:
+                    warped_pcd, iter_cnt, timer = model.register(visualize=args.visualize, timer=timer)
+                except ValueError as e:
+                    print(f"Error occurred during registration for entry {entry}: {e}")
+                    continue
                 timer.toc("registration")
                 flow = warped_pcd - model.src_pcd
 
