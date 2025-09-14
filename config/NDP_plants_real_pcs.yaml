@@ -38,5 +38,5 @@ split: { 'test': "test" }
 augment_noise: False
 
 #experiment
-exp_dir : real_pcs
-folder: pyramid_level
+exp_dir : vis
+folder: no-learned_real
