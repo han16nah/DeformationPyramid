@@ -17,9 +17,9 @@ folder: deploy
 batch_size: 1
 num_workers: 1
 augment_noise: 0.002
-data_root: data
+data_root: data_plants/plants_S1-single
 split: {
-  "train": split2/train,
-  "val": split2/val,
-  "test": split2/test
+  "train": partitioned-final/train,
+  "val": partitioned-final/val,
+  "test": partitioned-final/test
 }
