@@ -101,7 +101,8 @@ if __name__ == "__main__":
             overlap = np.zeros(len(src_pcd))
             try:
                 overlap[correspondence[:, 0].astype(int)] = 1
-            except IndexError:
+            except IndexError as e:
+                print(f"IndexError for {entry} when creating overlap mask: {e}. Setting overlap to all zeros.")
                 # IndexError occurs if correspondences are empty (e.g., small data cluster with no overlap between source and target).
                 # In this case, overlap is all 0.
                 overlap[:] = 0

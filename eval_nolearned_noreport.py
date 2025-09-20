@@ -99,7 +99,13 @@ if __name__ == "__main__":
 
             """obtain overlap mask"""
             overlap = np.zeros(len(src_pcd))
-            overlap[correspondence[:, 0].astype(int)] = 1
+            try:
+                overlap[correspondence[:, 0].astype(int)] = 1
+            except IndexError as e:
+                print(f"IndexError for {entry} when creating overlap mask: {e}. Setting overlap to all zeros.")
+                # IndexError occurs if correspondences are empty (e.g., small data cluster with no overlap between source and target).
+                # In this case, overlap is all 0.
+                overlap[:] = 0
             overlap = overlap.astype(bool)
             overlap = torch.from_numpy(overlap).to(config.device)
 
