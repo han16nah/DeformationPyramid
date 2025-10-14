@@ -131,7 +131,11 @@ if __name__ == "__main__":
 
             """compute overlap mask"""
             overlap = torch.zeros(len(src_pcd))
-            overlap[correspondence[:, 0].long()] = 1
+            try:
+                overlap[correspondence[:, 0].long()] = 1
+            except IndexError as e:
+                print(f"IndexError for {entry_list} when creating overlap mask: {e}. Setting overlap to all zeros.")
+                overlap = torch.zeros(len(src_pcd))
             overlap = overlap.bool()
             overlap =  overlap.to(config.device)
 
