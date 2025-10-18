@@ -113,8 +113,12 @@ if __name__ == "__main__":
 
 
             """predict landmarks"""
-            ldmk_s, ldmk_t, inlier_rate, inlier_rate_2 = ldmk_model.inference (inputs, reject_outliers=config.reject_outliers, inlier_thr=config.inlier_thr, timer=timer)
-
+            try:
+                ldmk_s, ldmk_t, inlier_rate, inlier_rate_2 = ldmk_model.inference (inputs, reject_outliers=config.reject_outliers, inlier_thr=config.inlier_thr, timer=timer)
+            except IndexError as e:
+                print(f"IndexError for {entry_list} during landmark inference: {e}. Skipping this entry.")
+                print("Corresponding inputs:", inputs)
+                continue
 
             src_pcd, tgt_pcd = inputs["src_pcd_list"][0], inputs["tgt_pcd_list"][0]
             s2t_flow = inputs['sflow_list'][0]
