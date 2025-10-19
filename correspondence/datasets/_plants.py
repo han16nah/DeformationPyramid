@@ -49,7 +49,7 @@ class _Plants(Dataset):
 
 
     def read_entries (self, split, data_root, d_slice=None, shuffle= False):
-        entries = glob.glob(os.path.join(data_root, split, "*/douglas_fir_deadbranches_anim*.npz"), recursive=True)
+        entries = glob.glob(os.path.join(data_root, split, "*/*.npz"), recursive=True)
         if shuffle:
             random.shuffle(entries)
         if d_slice:
