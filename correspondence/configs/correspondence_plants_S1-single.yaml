@@ -1,4 +1,4 @@
-matcher_config: 'correspondence/configs/lepard.yaml'
+matcher_config: 'correspondence/configs/lepard_plants.yaml'
 matcher_weights: 'correspondence/pretrained/plants_S1-single_weights.pth'
 
 outlier_rejection_config: 'correspondence/configs/outlier_rejection.yaml'
