@@ -1,5 +1,5 @@
 matcher_config: './configs/lepard.yaml'
-matcher_weights: './pretrained/plants_S1-single_S5_merged_weights.pth'
+matcher_weights: './pretrained/plants_S1-single_S5_weights.pth'
 
 
 model:
