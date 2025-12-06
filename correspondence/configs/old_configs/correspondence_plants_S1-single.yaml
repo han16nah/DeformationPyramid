@@ -1,8 +1,8 @@
-matcher_config: 'correspondence/configs/lepard_plants.yaml'
-matcher_weights: 'correspondence/pretrained/plants_S1-single_weights.pth'
+matcher_config: 'correspondence/configs/old_configs/lepard_plants.yaml'
+matcher_weights: 'correspondence/pretrained/old_weights/plants_S1-single_weights.pth'
 
 outlier_rejection_config: 'correspondence/configs/outlier_rejection.yaml'
-outlier_rejection_weights: 'correspondence/pretrained/outlier_plants_S1-single_weights.pth'
+outlier_rejection_weights: 'correspondence/pretrained/old_weights/outlier_plants_S1-single_weights.pth'
 
 
 mode: test

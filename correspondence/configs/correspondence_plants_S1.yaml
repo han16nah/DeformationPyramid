@@ -1,8 +1,8 @@
 matcher_config: 'correspondence/configs/lepard.yaml'
-matcher_weights: 'correspondence/pretrained/lepard_weights.pth'
+matcher_weights: 'correspondence/pretrained/plants_S1_weights.pth'
 
 outlier_rejection_config: 'correspondence/configs/outlier_rejection.yaml'
-outlier_rejection_weights: 'correspondence/pretrained/outlier_weights.pth'
+outlier_rejection_weights: 'correspondence/pretrained/outlier_S1_weights.pth'
 
 
 mode: test
@@ -12,14 +12,14 @@ exp_dir: None
 
 
 #dataset:
-dataset: 4dmatch
+dataset: plants
 folder: deploy
 batch_size: 1
 num_workers: 1
 augment_noise: 0.002
-data_root: /path/to/4DMatch
+data_root: data_plants/S1-single/subsets
 split: {
-  "train": split/train,
-  "val": split/val,
-  "test": split/test
+  "train": train,
+  "val": val,
+  "test": test
 }

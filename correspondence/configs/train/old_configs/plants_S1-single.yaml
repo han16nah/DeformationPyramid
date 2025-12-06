@@ -1,5 +1,5 @@
-matcher_config: './configs/lepard.yaml'
-matcher_weights: './pretrained/plants_S1-single_S5_weights.pth'
+matcher_config: './configs/lepard_plants.yaml'  # changed after train run, would need to train again
+matcher_weights: './pretrained/plants_S1-single_weights.pth'
 
 
 model:
@@ -59,15 +59,15 @@ iter_size: 1
 
 #dataset:
 dataset: plants
-folder: plants_S1-single_S5_sub
-batch_size: 4  # 8
+folder: plants_S1-single
+batch_size: 2  # 8
 num_workers: 0  # 16
 augment_noise: 0.002
-data_root: ../data_plants/plants_S1-single_S5_merged
+data_root: ../data/plants_S1-single
 split: {
-  "train": partitioned-final_subsampled/train,
-  "val": partitioned-final_subsampled/val,
-  "test": partitioned-final_subsampled/test
+  "train": partitioned-final/train,
+  "val": partitioned-final/val,
+  "test": partitioned-final/test
 }
 
 # change params for test

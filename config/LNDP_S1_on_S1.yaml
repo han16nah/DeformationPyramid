@@ -3,9 +3,9 @@ deformation_model: NDP
 
 
 use_ldmk: True
-ldmk_config: "./correspondence/configs/correspondence_plants_S1-single.yaml"
+ldmk_config: "./correspondence/configs/correspondence_plants_S1.yaml"
 
-num_workers: 0
+num_workers: 4
 batch_size: 1
 augment_noise: False
 
@@ -34,7 +34,7 @@ break_threshold_ratio: 0.001
 
 
 # threshold of inlier match
-inlier_thr : &inlier_thr 0.3  # check threshold
+inlier_thr : &inlier_thr 0.3
 reject_outliers: &reject_outliers True
 
 samples: &samples 2000
@@ -50,9 +50,9 @@ act_fn: relu
 
 
 #dataset
-data_root : "data/real"
+data_root : "data_plants/S1-single/subsets"
 split: { 'test': "test" }
 
 #experiment
 exp_dir :  !join [ *inlier_thr  ]
-folder: plants_S1-single_on_real
+folder: LNDP_S1_on_S1

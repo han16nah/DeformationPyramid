@@ -3,7 +3,7 @@ deformation_model: NDP
 
 
 use_ldmk: True
-ldmk_config: "./correspondence/configs/correspondence_plants_S5_sub.yaml"
+ldmk_config: "./correspondence/configs/correspondence.yaml"
 
 num_workers: 0
 batch_size: 1
@@ -50,9 +50,9 @@ act_fn: relu
 
 
 #dataset
-data_root : "data_plants/plants_S5/partitioned-final_subsampled"
-split: { 'test': "test" }
+data_root : "data_plants/plants_S1-single/partitioned-final"
+split: { 'test': "test_10clusters" }
 
 #experiment
 exp_dir :  !join [ *inlier_thr  ]
-folder: plants_S1-single_S5_sub
+folder: plants_S1-single_pretrained_10clusters

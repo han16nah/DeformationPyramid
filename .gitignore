@@ -15,3 +15,5 @@ data/
 __pycache__/
 snapshot/
 *.out
+correspondence/cpp_wrappers/cpp_neighbors/build/
+correspondence/cpp_wrappers/cpp_subsampling/build/

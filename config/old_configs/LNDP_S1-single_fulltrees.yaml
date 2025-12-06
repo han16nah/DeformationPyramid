@@ -3,7 +3,7 @@ deformation_model: NDP
 
 
 use_ldmk: True
-ldmk_config: "./correspondence/configs/correspondence_plants_S5_sub.yaml"
+ldmk_config: "./correspondence/configs/correspondence_plants_S1-single.yaml"
 
 num_workers: 0
 batch_size: 1
@@ -50,9 +50,9 @@ act_fn: relu
 
 
 #dataset
-data_root : "data/real"
+data_root : "data_plants/plants_S1-single"
 split: { 'test': "test" }
 
 #experiment
 exp_dir :  !join [ *inlier_thr  ]
-folder: plants_S5_on_real
+folder: plants_S1-single

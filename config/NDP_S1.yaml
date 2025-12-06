@@ -33,10 +33,10 @@ rotation_format : &rotation_format  "axis_angle"     # options [ "6D", "quaterni
 
 
 #dataset
-data_root : "data_plants/S5/subsets"
+data_root : "data_plants/S1-single/subsets"
 split: { 'test': "test" }
 augment_noise: False
 
 #experiment
 exp_dir :  vis
-folder: NDP_S5
+folder: NDP_S1
