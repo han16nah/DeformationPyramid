@@ -96,7 +96,7 @@ void grid_subsampling(vector<PointXYZ>& original_points,
 		}
 		if (use_classes)
 		{
-		    for (int i = 0; i < ldim; i++)
+		    for (size_t i = 0; i < ldim; ++i)
 		        subsampled_classes.push_back(max_element(v.second.labels[i].begin(), v.second.labels[i].end(),
 		        [](const pair<int, int>&a, const pair<int, int>&b){return a.second < b.second;})->first);
 		}
@@ -120,7 +120,7 @@ void batch_grid_subsampling(vector<PointXYZ>& original_points,
 	// Initialize variables
 	// ******************
 
-	int b = 0;
+	[[maybe_unused]] int b = 0;
 	int sum_b = 0;
 
 	// Number of points in the cloud
@@ -137,7 +137,7 @@ void batch_grid_subsampling(vector<PointXYZ>& original_points,
 	// Loop over batches
 	// *****************
 
-	for (b = 0; b < original_batches.size(); b++)
+	for (size_t b = 0; b < original_batches.size(); ++b)
 	{
 
 	    // Extract batch points features and labels
@@ -178,7 +178,7 @@ void batch_grid_subsampling(vector<PointXYZ>& original_points,
         // ****************************************
 
         // If too many points remove some
-        if (b_s_points.size() <= max_p)
+        if (b_s_points.size() <= static_cast<size_t>(max_p))
         {
             subsampled_points.insert(subsampled_points.end(), b_s_points.begin(), b_s_points.end());
 

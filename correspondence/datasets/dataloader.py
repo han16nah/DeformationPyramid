@@ -572,6 +572,7 @@ def collate_fn_4dmatch(pairwise_data, config, neighborhood_limits ):
         except ValueError:
             print(f"Skipping entry {entry_id} due to ValueError in multual_nn_correspondence")
             continue
+            # CHECK (ALSO FOR ABOVE) if skipping is okay or creates a bug / misalignment later on...
         coarse_matches.append(coarse_match_gt)
         coarse_flow.append(torch.from_numpy(c_flow))
 

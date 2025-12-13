@@ -37,7 +37,7 @@ def _handle_pointcloud_input(
         normals = points.normals_padded()  # either a tensor or None
     elif torch.is_tensor(points):
         if points.ndim != 3:
-            raise ValueError("Expected points to be of shape (N, P, D)")
+            raise ValueError(f"Expected points to be of shape (N, P, D). Got {points.shape}.")
         X = points
         if lengths is not None and (
                 lengths.ndim != 1 or lengths.shape[0] != X.shape[0]

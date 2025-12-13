@@ -14,7 +14,6 @@ from model.loss import compute_flow_metrics
 from utils.benchmark_utils import setup_seed
 from utils.utils import Logger, AverageMeter
 from utils.tiktok import Timers
-import laspy
 
 
 def join(loader, node):
@@ -23,21 +22,6 @@ def join(loader, node):
 yaml.add_constructor('!join', join)
 
 setup_seed(0)
-
-
-def write_las(array, filename):
-    # create header
-    header = laspy.LasHeader(point_format=3, version="1.2")
-    header.offset = np.array([0, 0, 0])
-    header.scales = np.array([0.00025, 0.00025, 0.00025])
-    # Create a new las file
-    outfile = laspy.LasData(header)
-    outfile.header.max = [np.max(array[:,0]), np.max(array[:,1]), np.max(array[:,2])]
-    outfile.header.min = [np.min(array[:,0]), np.min(array[:,1]), np.min(array[:,2])]
-    outfile.x = array[:, 0]
-    outfile.y = array[:, 1]
-    outfile.z = array[:, 2]
-    outfile.write(filename)
 
 
 if __name__ == "__main__":

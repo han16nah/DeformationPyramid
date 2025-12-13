@@ -1,3 +1,4 @@
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <Python.h>
 #include <numpy/arrayobject.h>
 #include "neighbors/neighbors.h"
@@ -8,9 +9,9 @@
 // docstrings for our module
 // *************************
 
-static char module_docstring[] = "This module provides two methods to compute radius neighbors from pointclouds or batch of pointclouds";
+static const char module_docstring[] = "This module provides two methods to compute radius neighbors from pointclouds or batch of pointclouds";
 
-static char batch_query_docstring[] = "Method to get radius neighbors in a batch of stacked pointclouds";
+static const char batch_query_docstring[] = "Method to get radius neighbors in a batch of stacked pointclouds";
 
 
 // Declare the functions
@@ -68,11 +69,11 @@ static PyObject* batch_neighbors(PyObject* self, PyObject* args, PyObject* keywd
 	PyObject* s_batches_obj = NULL;
 
 	// Keywords containers
-	static char* kwlist[] = { "queries", "supports", "q_batches", "s_batches", "radius", NULL };
+	static const char* kwlist[] = { "queries", "supports", "q_batches", "s_batches", "radius", NULL };
 	float radius = 0.1;
 
 	// Parse the input  
-	if (!PyArg_ParseTupleAndKeywords(args, keywds, "OOOO|$f", kwlist, &queries_obj, &supports_obj, &q_batches_obj, &s_batches_obj, &radius))
+	if (!PyArg_ParseTupleAndKeywords(args, keywds, "OOOO|$f", const_cast<char**>(kwlist), &queries_obj, &supports_obj, &q_batches_obj, &s_batches_obj, &radius))
 	{
 		PyErr_SetString(PyExc_RuntimeError, "Error parsing arguments");
 		return NULL;
@@ -80,10 +81,10 @@ static PyObject* batch_neighbors(PyObject* self, PyObject* args, PyObject* keywd
 
 
 	// Interpret the input objects as numpy arrays.
-	PyObject* queries_array = PyArray_FROM_OTF(queries_obj, NPY_FLOAT, NPY_IN_ARRAY);
-	PyObject* supports_array = PyArray_FROM_OTF(supports_obj, NPY_FLOAT, NPY_IN_ARRAY);
-	PyObject* q_batches_array = PyArray_FROM_OTF(q_batches_obj, NPY_INT, NPY_IN_ARRAY);
-	PyObject* s_batches_array = PyArray_FROM_OTF(s_batches_obj, NPY_INT, NPY_IN_ARRAY);
+	PyObject* queries_array = PyArray_FROM_OTF(queries_obj, NPY_FLOAT, NPY_ARRAY_IN_ARRAY);
+	PyObject* supports_array = PyArray_FROM_OTF(supports_obj, NPY_FLOAT, NPY_ARRAY_IN_ARRAY);
+	PyObject* q_batches_array = PyArray_FROM_OTF(q_batches_obj, NPY_INT, NPY_ARRAY_IN_ARRAY);
+	PyObject* s_batches_array = PyArray_FROM_OTF(s_batches_obj, NPY_INT, NPY_ARRAY_IN_ARRAY);
 
 	// Verify data was load correctly.
 	if (queries_array == NULL)
@@ -124,7 +125,7 @@ static PyObject* batch_neighbors(PyObject* self, PyObject* args, PyObject* keywd
 	}
 
 	// Check that the input array respect the dims
-	if ((int)PyArray_NDIM(queries_array) != 2 || (int)PyArray_DIM(queries_array, 1) != 3)
+	if ((int)PyArray_NDIM((PyArrayObject*)queries_array) != 2 || (int)PyArray_DIM((PyArrayObject*)queries_array, 1) != 3)
 	{
 		Py_XDECREF(queries_array);
 		Py_XDECREF(supports_array);
@@ -133,7 +134,7 @@ static PyObject* batch_neighbors(PyObject* self, PyObject* args, PyObject* keywd
 		PyErr_SetString(PyExc_RuntimeError, "Wrong dimensions : query.shape is not (N, 3)");
 		return NULL;
 	}
-	if ((int)PyArray_NDIM(supports_array) != 2 || (int)PyArray_DIM(supports_array, 1) != 3)
+	if ((int)PyArray_NDIM((PyArrayObject*)supports_array) != 2 || (int)PyArray_DIM((PyArrayObject*)supports_array, 1) != 3)
 	{
 		Py_XDECREF(queries_array);
 		Py_XDECREF(supports_array);
@@ -142,7 +143,7 @@ static PyObject* batch_neighbors(PyObject* self, PyObject* args, PyObject* keywd
 		PyErr_SetString(PyExc_RuntimeError, "Wrong dimensions : support.shape is not (N, 3)");
 		return NULL;
 	}
-	if ((int)PyArray_NDIM(q_batches_array) > 1)
+	if ((int)PyArray_NDIM((PyArrayObject*)q_batches_array) > 1)
 	{
 		Py_XDECREF(queries_array);
 		Py_XDECREF(supports_array);
@@ -151,7 +152,7 @@ static PyObject* batch_neighbors(PyObject* self, PyObject* args, PyObject* keywd
 		PyErr_SetString(PyExc_RuntimeError, "Wrong dimensions : queries_batches.shape is not (B,) ");
 		return NULL;
 	}
-	if ((int)PyArray_NDIM(s_batches_array) > 1)
+	if ((int)PyArray_NDIM((PyArrayObject*)s_batches_array) > 1)
 	{
 		Py_XDECREF(queries_array);
 		Py_XDECREF(supports_array);
@@ -160,7 +161,7 @@ static PyObject* batch_neighbors(PyObject* self, PyObject* args, PyObject* keywd
 		PyErr_SetString(PyExc_RuntimeError, "Wrong dimensions : supports_batches.shape is not (B,) ");
 		return NULL;
 	}
-	if ((int)PyArray_DIM(q_batches_array, 0) != (int)PyArray_DIM(s_batches_array, 0))
+	if ((int)PyArray_DIM((PyArrayObject*)q_batches_array, 0) != (int)PyArray_DIM((PyArrayObject*)s_batches_array, 0))
 	{
 		Py_XDECREF(queries_array);
 		Py_XDECREF(supports_array);
@@ -171,12 +172,11 @@ static PyObject* batch_neighbors(PyObject* self, PyObject* args, PyObject* keywd
 	}
 
 	// Number of points
-	int Nq = (int)PyArray_DIM(queries_array, 0);
-	int Ns= (int)PyArray_DIM(supports_array, 0);
+	int Nq = (int)PyArray_DIM((PyArrayObject*)queries_array, 0);
+	int Ns= (int)PyArray_DIM((PyArrayObject*)supports_array, 0);
 
 	// Number of batches
-	int Nb = (int)PyArray_DIM(q_batches_array, 0);
-
+	int Nb = (int)PyArray_DIM((PyArrayObject*)q_batches_array, 0);
 	// Call the C++ function
 	// *********************
 
@@ -185,10 +185,10 @@ static PyObject* batch_neighbors(PyObject* self, PyObject* args, PyObject* keywd
 	vector<PointXYZ> supports;
 	vector<int> q_batches;
 	vector<int> s_batches;
-	queries = vector<PointXYZ>((PointXYZ*)PyArray_DATA(queries_array), (PointXYZ*)PyArray_DATA(queries_array) + Nq);
-	supports = vector<PointXYZ>((PointXYZ*)PyArray_DATA(supports_array), (PointXYZ*)PyArray_DATA(supports_array) + Ns);
-	q_batches = vector<int>((int*)PyArray_DATA(q_batches_array), (int*)PyArray_DATA(q_batches_array) + Nb);
-	s_batches = vector<int>((int*)PyArray_DATA(s_batches_array), (int*)PyArray_DATA(s_batches_array) + Nb);
+	queries = vector<PointXYZ>((PointXYZ*)PyArray_DATA((PyArrayObject*)queries_array), (PointXYZ*)PyArray_DATA((PyArrayObject*)queries_array) + Nq);
+	supports = vector<PointXYZ>((PointXYZ*)PyArray_DATA((PyArrayObject*)supports_array), (PointXYZ*)PyArray_DATA((PyArrayObject*)supports_array) + Ns);
+	q_batches = vector<int>((int*)PyArray_DATA((PyArrayObject*)q_batches_array), (int*)PyArray_DATA((PyArrayObject*)q_batches_array) + Nb);
+	s_batches = vector<int>((int*)PyArray_DATA((PyArrayObject*)s_batches_array), (int*)PyArray_DATA((PyArrayObject*)s_batches_array) + Nb);
 
 	// Create result containers
 	vector<int> neighbors_indices;
@@ -221,7 +221,7 @@ static PyObject* batch_neighbors(PyObject* self, PyObject* args, PyObject* keywd
 
 	// Fill output array with values
 	size_t size_in_bytes = Nq * max_neighbors * sizeof(int);
-	memcpy(PyArray_DATA(res_obj), neighbors_indices.data(), size_in_bytes);
+	memcpy(PyArray_DATA((PyArrayObject*)res_obj), neighbors_indices.data(), size_in_bytes);
 
 	// Merge results
 	ret = Py_BuildValue("N", res_obj);

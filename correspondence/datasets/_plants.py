@@ -39,7 +39,7 @@ class _Plants(Dataset):
 
         self.rot_factor = 1.
         self.augment_noise = config.augment_noise
-        self.max_points = 1_000_000  # 30000
+        self.max_points = 200_000  # 30000
 
         # self.overlap_radius = 0.0375  # does not seem to be needed for this dataset
 
@@ -84,6 +84,7 @@ class _Plants(Dataset):
 
         downsampled = False
         # if we get too many points, we do some downsampling
+        #print(f"Number of source points: {src_pcd.shape[0]:_d}")
         if src_pcd.shape[0] > self.max_points:
             print("Downsampling...")
             downsampled = True
@@ -93,7 +94,7 @@ class _Plants(Dataset):
             s2t_flow = s2t_flow[sub_idx_src]
             # indices of target - no filtering
             sub_idx_tgt = np.arange(tgt_pcd.shape[0])
-
+        # print(f"Number of target points: {tgt_pcd.shape[0]:_d}")
         if (tgt_pcd.shape[0] > self.max_points):
             print("Downsampling...")
             sub_idx_tgt = np.random.permutation(tgt_pcd.shape[0])[:self.max_points]
