@@ -5,8 +5,8 @@ import torch
 import torch.nn as nn
 import numpy as np
 
-# from tensorboardX import SummaryWriter
-from torch.utils.tensorboard import SummaryWriter
+from tensorboardX import SummaryWriter
+# from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
 from lib.timer import AverageMeter
