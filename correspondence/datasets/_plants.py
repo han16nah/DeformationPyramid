@@ -24,13 +24,13 @@ def find_new_corr(corr, mask_x, mask_y):
 
 class _Plants(Dataset):
 
-    def __init__(self, config, split, data_augmentation=True):
+    def __init__(self, config, split, data_augmentation=True, check_computed=None):
         super(_Plants, self).__init__()
 
         assert split in ['train','val','test']
 
 
-        self.entries = self.read_entries(  config.split[split] , config.data_root, d_slice=None )
+        self.entries = self.read_entries(  config.split[split] , config.data_root, d_slice=None, check_computed=check_computed )
 
         self.base_dir = config.data_root
         print(Path(self.base_dir).absolute())
@@ -48,8 +48,10 @@ class _Plants(Dataset):
 
 
 
-    def read_entries (self, split, data_root, d_slice=None, shuffle= False):
+    def read_entries (self, split, data_root, d_slice=None, shuffle= False, check_computed=None):
         entries = glob.glob(os.path.join(data_root, split, "*/*.npz"), recursive=True)
+        if check_computed is not None:
+            entries = [e for e in entries if not (Path(check_computed) / (Path(e).stem + "_out.npz")).exists()]
         if shuffle:
             random.shuffle(entries)
         if d_slice:
