@@ -165,6 +165,8 @@ if __name__ == "__main__":
                 for key, _ in metric_info.items():
                     stats_meter[key] = AverageMeter()
             for key, value in metric_info.items():
+                if torch.is_tensor(value):
+                    value = value.detach().cpu().item()
                 stats_meter[key].update(value)
 
         # note down flow scores on a benchmark
