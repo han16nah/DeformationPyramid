@@ -106,6 +106,12 @@ class Outlier_Rejection(nn.Module):
             batch_mask[i][:batch_len[i]] = 1
             batch_index[i][:batch_len[i]] = batch_ind[i]
 
+        # additional check: remove entries with XYZ all zeros (bad points)
+        # (this operates after padding)
+        zero_point_mask = (batch_vec6d.abs().sum(dim=-1) > 0)  # [B, lenth]
+        batch_mask = batch_mask & zero_point_mask  # logical AND
+        if torch.isnan(batch_vec6d).any():
+            print("NaN in vec_6d!")
 
         data['vec_6d'] = batch_vec6d
         data['vec_6d_mask'] = batch_mask

@@ -2,7 +2,27 @@ import torch
 import torch.nn as nn
 import numpy as np
 
+def data_subset(data, valid_indices):
+    """
+    Returns a subset of the batch corresponding to valid_indices.
 
+    Args:
+        data (dict): batch dictionary with keys like 'vec_6d', 'vec_6d_mask', etc.
+        valid_indices (torch.Tensor or list): indices of valid batch items
+
+    Returns:
+        dict: new batch dict with only valid samples
+    """
+    subset = {}
+    for k, v in data.items():
+        if torch.is_tensor(v):
+            subset[k] = v[valid_indices]
+        elif isinstance(v, list):
+            subset[k] = [v[i] for i in valid_indices]
+        else:
+            # keep scalars, floats, strings as-is
+            subset[k] = v
+    return subset
 
 class NeCoLoss(nn.Module):
     def __init__(self, config):
@@ -29,9 +49,38 @@ class NeCoLoss(nn.Module):
         ###################################
         match_pred= data['coarse_match_pred']
         '''Inlier Ratio (IR)'''
-        inlier_mask, inlier_rate = self.compute_inlier_mask( data, self.inlier_thr, s2t_flow=s2t_flow)
-        loss_info.update({"IR Lepard": torch.stack(inlier_rate).mean()})  # only check the first frame pair in the batch
+        inlier_mask, inlier_rate, match_status = self.compute_inlier_mask( data, self.inlier_thr, s2t_flow=s2t_flow)
 
+        device = data['vec_6d_mask'].device
+
+        # --- Inlier Ratio (only where matches exist AND some inliers) ---
+        valid_ir = [r for r, s in zip(inlier_rate, match_status) if s == "ok"]
+        if len(valid_ir) > 0:
+            ir_value = torch.stack(valid_ir).mean()
+        else:
+            ir_value = torch.tensor(0.0, device=device)
+
+        # --- Diagnostics ---
+        nomatch_rate = torch.tensor(
+            [s == "no_matches" for s in match_status],
+            device=device
+        ).float().mean()
+
+        all_outlier_rate = torch.tensor(
+            [s == "all_outliers" for s in match_status],
+            device=device
+        ).float().mean()
+
+        loss_info.update({
+            "IR Lepard": ir_value,
+            "NoMatch Rate": nomatch_rate,
+            "AllOutlier Rate": all_outlier_rate,
+        })
+
+        if nomatch_rate == 1.0:
+            # all batches have no matches, print file name
+            print("All batches have no matches. Entries:")
+            print(data['entry_list'])
 
         vis = False
         if vis:
@@ -40,10 +89,52 @@ class NeCoLoss(nn.Module):
         ###################################
         # compute loss of outlier filter
         ###################################
-        labels = torch.cat( inlier_mask )
-        inlier_conf= data["inlier_conf"].reshape(-1) [  data["vec_6d_mask"].reshape(-1)]
-        loss = self.get_weighted_bce_loss(inlier_conf, labels.float())
+        #labels = torch.cat( inlier_mask )
+        #inlier_conf= data["inlier_conf"].reshape(-1) [  data["vec_6d_mask"].reshape(-1)]
+        #loss = self.get_weighted_bce_loss(inlier_conf, labels.float())
+        # inlier_conf: [B, N] or flattened [B*N]
+        inlier_conf_flat = data["inlier_conf"].reshape(-1)
 
+        # mask: True for valid points, same shape as inlier_conf_flat
+        mask_flat = data["vec_6d_mask"].reshape(-1)
+
+        # labels: same size as inlier_conf, fill invalid entries with 0 or ignore
+        labels_full = torch.zeros_like(inlier_conf_flat)
+        supervision_mask = torch.zeros_like(mask_flat)
+        
+        # absolute indices of valid vec6d entries
+        valid_ids = mask_flat.nonzero(as_tuple=True)[0]
+
+        offset = 0
+        for i, status in enumerate(match_status):
+            num_i = data["vec_6d_mask"][i].sum().item()
+
+            if status == "ok" and num_i > 0:
+                ids = valid_ids[offset:offset + num_i]
+                labels_full[ids] = inlier_mask[i].float()
+                supervision_mask[ids] = 1
+
+            offset += num_i
+
+        # BCE
+        loss_per_point = nn.functional.binary_cross_entropy(
+            inlier_conf_flat,
+            labels_full,
+            reduction="none"
+        )
+
+        # only supervised points contribute
+        loss = (
+            loss_per_point * supervision_mask.float()
+        ).sum() / supervision_mask.sum().clamp(min=1)
+        
+        num_supervised = supervision_mask.sum().item()
+        total_valid = supervision_mask.numel()
+
+        loss_info.update({
+            "num_supervised": num_supervised,
+            "supervised_ratio": num_supervised / max(total_valid, 1)
+        })
 
         ###################################
         # evaluate metrtics after outlier filter
@@ -180,18 +271,70 @@ class NeCoLoss(nn.Module):
 
         inlier_rate = []
         inlier_mask = []
+        match_status = []
+
+        thr2 = inlier_thr ** 2
 
         for i in range(bsize):
+            valid_mask = batch_mask[i]          # [Mi]
+            idx = batch_index[i]                   # [Mi, 2]
+            num_matches = valid_mask.sum().item()
 
-            s_pcd_match_warp_gt = s_pcd_wrapped[i][batch_index[i][:,0]] [batch_mask[i]]
-            t_pcd_matched = batch_vec6d[i][:,3:] [batch_mask[i]]
-            inlier = torch.sum( (s_pcd_match_warp_gt - t_pcd_matched)**2 , dim= 1) <  inlier_thr**2
+            # --------------------------------------------------
+            # Case 1: no matches at all
+            # --------------------------------------------------
+            if num_matches == 0:
+                inlier_mask.append(
+                    torch.zeros((0,), device=s_pcd.device, dtype=torch.bool)
+                )
+                inlier_rate.append(torch.tensor(0.0, device=s_pcd.device))
+                match_status.append("no_matches")
+                continue
 
-            inlier_rate.append(inlier.sum().float() / t_pcd_matched.shape[0])
+            # --------------------------------------------------
+            # Safe indexing (CRITICAL)
+            # --------------------------------------------------
+            src_idx = idx[:, 0][valid_mask]
+
+            # clamp to avoid CUDA assert even if upstream bug exists
+            src_idx = src_idx.clamp(
+                min=0,
+                max=s_pcd_wrapped[i].shape[0] - 1
+            )
+
+            s_matched = s_pcd_wrapped[i][src_idx]        # [K,3]
+            t_matched = batch_vec6d[i][:, 3:][valid_mask]  # [K,3]
+
+            # --------------------------------------------------
+            # Inlier test
+            # --------------------------------------------------
+            sq_dist = ((s_matched - t_matched) ** 2).sum(dim=1)
+            inlier = sq_dist < thr2
+
+            num_inliers = inlier.sum().item()
+
+            # --------------------------------------------------
+            # Case 2: matches exist but all are outliers
+            # --------------------------------------------------
+            if num_inliers == 0:
+                match_status.append("all_outliers")
+                inlier_rate.append(torch.tensor(0.0, device=s_pcd.device))
+            else:
+                match_status.append("ok")
+                inlier_rate.append(
+                    torch.tensor(num_inliers / num_matches, device=s_pcd.device)
+                )
             inlier_mask.append(inlier)
 
+            #s_pcd_match_warp_gt = s_pcd_wrapped[i][batch_index[i][:,0]] [batch_mask[i]]
+            #t_pcd_matched = batch_vec6d[i][:,3:] [batch_mask[i]]
+            #inlier = torch.sum( (s_pcd_match_warp_gt - t_pcd_matched)**2 , dim= 1) <  thr2
 
-        return  inlier_mask, inlier_rate
+            #inlier_rate.append(inlier.sum().float() / t_pcd_matched.shape[0])
+            #inlier_mask.append(inlier)
+
+
+        return  inlier_mask, inlier_rate, match_status
 
 
 
