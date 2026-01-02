@@ -73,7 +73,7 @@ if __name__ == "__main__":
 
         for i in tqdm( range( len(D))):
 
-            entry, src_pcd, tgt_pcd, _, _, correspondence, rot, trn, s2t_flow, _, depth_paths, cam_intrin = D.__getitem__(i, debug=False)
+            entry, src_pcd, tgt_pcd, _, _, correspondence, rot, trn, center, s2t_flow, _, depth_paths, cam_intrin = D.__getitem__(i, debug=False)
 
             """compute scene flow GT"""
             src_pcd_deformed = src_pcd + s2t_flow
@@ -111,13 +111,17 @@ if __name__ == "__main__":
 
                 if args.write:
                     print(f"Saving file to {Path(config['snapshot_dir']) / f'{fstem}_out.npz'}")
+                    center = center.astype(np.float32)
+                    src_pcd = src_pcd.astype(np.float32) + center
+                    tgt_pcd = tgt_pcd.astype(np.float32) + center
+                    warped_pcd = warped_pcd.cpu().numpy() + center
                     # save data to .npz
                     np.savez(Path(config['snapshot_dir']) / f'{fstem}_out.npz',
                             s_pc=src_pcd.astype(np.float32),
                             t_pc=tgt_pcd.astype(np.float32),
                             s2t_flow=flow.cpu().numpy(),
                             s2t_flow_gt=flow_gt.cpu().numpy(),
-                            warped_pcd=warped_pcd.cpu().numpy())
+                            warped_pcd=warped_pcd)
 
             elif config.deformation_model in ["NSFP", "Nerfies", "Sinkhorn"]:
 

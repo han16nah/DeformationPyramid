@@ -364,7 +364,7 @@ def collate_fn_4dmatch_multiview_sequence(multiview_data, config, neighborhood_l
 
     return pcd_pairs, pairwise_data_list
 
-def collate_fn_4dmatch(pairwise_data, config, neighborhood_limits ):
+def collate_fn_plants(pairwise_data, config, neighborhood_limits ):
 
     entry_list = []
 
@@ -374,6 +374,7 @@ def collate_fn_4dmatch(pairwise_data, config, neighborhood_limits ):
 
     src_pcd_list = []
     tgt_pcd_list = []
+    center_list = []
 
     batched_rot = []
     batched_trn = []
@@ -386,13 +387,14 @@ def collate_fn_4dmatch(pairwise_data, config, neighborhood_limits ):
 
 
     # for ind in range ( len(pairwise_data) ) :
-    for ind, (entry, src_pcd, tgt_pcd, src_feats, tgt_feats, correspondences, rot, trn, s2t_flow, metric_index, depth_paths, cam_intrin) in enumerate(pairwise_data):
+    for ind, (entry, src_pcd, tgt_pcd, src_feats, tgt_feats, correspondences, rot, trn, center, s2t_flow, metric_index, depth_paths, cam_intrin) in enumerate(pairwise_data):
         #            src_pcd, tgt_pcd, src_feats, tgt_feats, correspondences, rot, trans, s2t_flow, metric_index
 
 
         # src_feats = np.ones_like(src_pcd[:, :1]).astype(np.float32)
         # tgt_feats = np.ones_like(tgt_pcd[:, :1]).astype(np.float32)
         entry_list.append(entry)
+        center_list.append( torch.from_numpy(center).float() )
 
         src_pcd_list.append(torch.from_numpy(src_pcd))
         tgt_pcd_list.append(torch.from_numpy(tgt_pcd))
@@ -582,7 +584,7 @@ def collate_fn_4dmatch(pairwise_data, config, neighborhood_limits ):
 
         vis=False # for debug
         if vis :
-            viz_coarse_nn_correspondence_mayavi(c_src_pcd_np, c_tgt_pcd_np, coarse_match_gt, scale_factor=0.02)
+            viz_coarse_nn_correspondence_open3d(c_src_pcd_np, c_tgt_pcd_np, coarse_match_gt, scale_factor=0.02)
 
 
     src_ind_coarse_split = torch.cat(src_ind_coarse_split)
@@ -595,6 +597,7 @@ def collate_fn_4dmatch(pairwise_data, config, neighborhood_limits ):
         'entry_list': entry_list,
         'src_pcd_list': src_pcd_list,
         'tgt_pcd_list': tgt_pcd_list,
+        'center_list': center_list,
         'points': input_points,
         'neighbors': input_neighbors,
         'pools': input_pools,
@@ -669,7 +672,7 @@ def get_datasets(config):
         val_set = _4DMatch_Multiview(config, 'val', data_augmentation=False)
         test_set = _4DMatch_Multiview(config, 'test', data_augmentation=False)
     elif(config.dataset == 'plants'):
-        train_set = _Plants(config, 'train', data_augmentation=True)
+        train_set = _Plants(config, 'train', data_augmentation=False)
         val_set = _Plants(config, 'val', data_augmentation=False)
         test_set = _Plants(config, 'test', data_augmentation=False)
     else:
@@ -681,7 +684,7 @@ def get_datasets(config):
 
 def get_dataloader(dataset, config,  shuffle=True, neighborhood_limits=None):
 
-    collate_fn = collate_fn_4dmatch
+    collate_fn = collate_fn_plants
 
     if neighborhood_limits is None:
         neighborhood_limits = calibrate_neighbors(dataset, config['kpfcn_config'], collate_fn=collate_fn)

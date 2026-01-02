@@ -175,12 +175,12 @@ class Trainer(object):
             inputs = next(c_loader_iter)
             # for gpu_div_i, _ in enumerate(inputs):
             for k, v in inputs.items():
-                if type(v) == list:
-                    inputs [k] = [item.to(self.device) for item in v if type(item) != str]
-                elif type(v) in [ dict, float, type(None), np.ndarray]:
-                    pass
-                else:
-                    inputs [k] = v.to(self.device)
+                if k == 'entry_list':
+                    continue  # keep filenames on CPU
+                if isinstance(v, list):
+                    inputs[k] = [item.to(self.device) for item in v if torch.is_tensor(item)]
+                elif isinstance(v, torch.Tensor):
+                    inputs[k] = v.to(self.device)
             if self.timers: self.timers.toc('load batch')
             ##################################
 
@@ -210,6 +210,8 @@ class Trainer(object):
                 for key, _ in loss_info.items():
                     stats_meter[key] = AverageMeter()
             for key, value in loss_info.items():
+                if torch.is_tensor(value):
+                    value = value.detach().cpu().item()
                 stats_meter[key].update(value)
 
             if phase == 'train' :

@@ -70,6 +70,60 @@ def viz_coarse_nn_correspondence_mayavi(s_pc, t_pc, good_c, bad_c, f_src_pcd=Non
     mlab.show()
 
 
+def viz_coarse_nn_correspondence_open3d(s_pc, t_pc, good_c, bad_c, f_src_pcd=None, f_tgt_pcd=None, scale_factor=0.02):
+    c_red = (224. / 255., 0 / 255., 0 / 255.)
+    c_pink = (224. / 255., 75. / 255., 232. / 255.)
+    c_blue = (0. / 255., 0. / 255., 255. / 255.)
+    c_green = (0. / 255., 255. / 255., 0. / 255.)
+    c_gray1 = (255 / 255., 255 / 255., 125 / 255.)
+    c_gray2 = (125. / 255., 125. / 255., 255. / 255.)
+
+    vis_list = []
+    if f_src_pcd is not None:
+        s_pcd_o3d = o3d.geometry.PointCloud()
+        s_pcd_o3d.points = o3d.utility.Vector3dVector(f_src_pcd)
+        s_pcd_o3d.paint_uniform_color(c_gray1)
+        vis_list.append(s_pcd_o3d)
+    else:
+        s_pcd_o3d = o3d.geometry.PointCloud()
+        s_pcd_o3d.points = o3d.utility.Vector3dVector(s_pc)
+        s_pcd_o3d.paint_uniform_color(c_gray1)
+        vis_list.append(s_pcd_o3d)
+    if f_tgt_pcd is not None:
+        t_pcd_o3d = o3d.geometry.PointCloud()
+        t_pcd_o3d.points = o3d.utility.Vector3dVector(f_tgt_pcd)
+        t_pcd_o3d.paint_uniform_color(c_gray2)
+        vis_list.append(t_pcd_o3d)
+    else:
+        t_pcd_o3d = o3d.geometry.PointCloud()
+        t_pcd_o3d.points = o3d.utility.Vector3dVector(t_pc)
+        t_pcd_o3d.paint_uniform_color(c_gray2)
+        vis_list.append(t_pcd_o3d)
+    s_cpts_god = s_pc[good_c[0]]
+    t_cpts_god = t_pc[good_c[1]]
+    flow_good = t_cpts_god - s_cpts_god
+    t_cpts_god = t_cpts_god
+    s_cpts_bd = s_pc[bad_c[0]]
+    t_cpts_bd = t_pc[bad_c[1]]
+    flow_bad = t_cpts_bd - s_cpts_bd
+
+    def match_draw(s_cpts, t_cpts, flow, color):
+
+        s_cpts_o3d = o3d.geometry.PointCloud()
+        s_cpts_o3d.points = o3d.utility.Vector3dVector(s_cpts)
+        s_cpts_o3d.paint_uniform_color(c_blue)
+        t_cpts_o3d = o3d.geometry.PointCloud()
+        t_cpts_o3d.points = o3d.utility.Vector3dVector(t_cpts)
+        t_cpts_o3d.paint_uniform_color(c_pink)
+        vis_list.append(s_cpts_o3d)
+        vis_list.append(t_cpts_o3d)
+
+    match_draw(s_cpts_god, t_cpts_god, flow_good, c_green)
+    match_draw(s_cpts_bd, t_cpts_bd, flow_bad, c_red)
+
+    o3d.visualization.draw_geometries(vis_list)
+
+
 
 def correspondence_viz(src_raw, tgt_raw, src_pcd, tgt_pcd, corrs, inlier_mask, max=200):
     # perm = np.random.permutation(corrs.shape[1])

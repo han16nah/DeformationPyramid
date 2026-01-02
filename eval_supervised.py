@@ -159,13 +159,18 @@ if __name__ == "__main__":
                 if args.write:
                     fstem = Path(entry_list).stem
                     print(f"Saving file to {Path(config['snapshot_dir']) / f'{fstem}_out.npz'}")
+                    # de-center
+                    center = inputs['center_list'][0]
+                    src_pcd = src_pcd.cpu().numpy() + center.cpu().numpy()
+                    tgt_pcd = tgt_pcd.cpu().numpy() + center.cpu().numpy()
+                    warped_pcd = warped_pcd.cpu().numpy() + center.cpu().numpy()
                     # save data to .npz
                     np.savez(Path(config['snapshot_dir']) / f'{fstem}_out.npz',
-                            s_pc=src_pcd.cpu().numpy(),
-                            t_pc=tgt_pcd.cpu().numpy(),
+                            s_pc=src_pcd,
+                            t_pc=tgt_pcd,
                             s2t_flow=flow.cpu().numpy(),
                             s2t_flow_gt=flow_gt.cpu().numpy(),
-                            warped_pcd=warped_pcd.cpu().numpy())
+                            warped_pcd=warped_pcd)
 
 
             elif config.deformation_model == "ED": # Lepard+NICP

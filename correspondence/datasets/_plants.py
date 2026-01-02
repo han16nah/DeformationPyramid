@@ -24,7 +24,7 @@ def find_new_corr(corr, mask_x, mask_y):
 
 class _Plants(Dataset):
 
-    def __init__(self, config, split, data_augmentation=True, check_computed=None):
+    def __init__(self, config, split, data_augmentation=False, check_computed=None):
         super(_Plants, self).__init__()
 
         assert split in ['train','val','test']
@@ -33,7 +33,6 @@ class _Plants(Dataset):
         self.entries = self.read_entries(  config.split[split] , config.data_root, d_slice=None, check_computed=check_computed )
 
         self.base_dir = config.data_root
-        print(Path(self.base_dir).absolute())
         self.data_augmentation = data_augmentation
         self.config = config
 
@@ -80,6 +79,11 @@ class _Plants(Dataset):
                 metric_index = entry['metric_index'].squeeze()
             else:
                 metric_index = None
+            # Centering patch (global normalization)
+            all_points = np.vstack([src_pcd, tgt_pcd])
+            center = all_points.mean(axis=0, keepdims=True)
+            src_pcd = src_pcd - center
+            tgt_pcd = tgt_pcd - center
 
         depth_paths = None
         cam_intrin = None
@@ -115,21 +119,27 @@ class _Plants(Dataset):
 
         
         if debug:
-            import mayavi.mlab as mlab
+            import open3d as o3d
             c_red = (224. / 255., 0 / 255., 125 / 255.)
             c_pink = (224. / 255., 75. / 255., 232. / 255.)
             c_blue = (0. / 255., 0. / 255., 255. / 255.)
-            scale_factor = 0.013
-            src_wrapped = (np.matmul( rot, src_pcd_deformed.T ) + trans ).T
-            mlab.points3d(src_wrapped[:, 0], src_wrapped[:, 1], src_wrapped[:, 2], scale_factor=scale_factor, color=c_pink)
-            mlab.points3d(src_pcd[ :, 0] , src_pcd[ :, 1], src_pcd[:,  2], scale_factor=scale_factor , color=c_red)
-            mlab.points3d(tgt_pcd[ :, 0] , tgt_pcd[ :, 1], tgt_pcd[:,  2], scale_factor=scale_factor , color=c_blue)
-            mlab.show()
 
+            src_wrapped = (np.matmul( rot, src_pcd_deformed.T ) + trans ).T
+            src_wrapped_o3d = o3d.geometry.PointCloud()
+            src_wrapped_o3d.points = o3d.utility.Vector3dVector(src_wrapped)
+            src_wrapped_o3d.paint_uniform_color(c_pink)
+            src_pcd_o3d = o3d.geometry.PointCloud()
+            src_pcd_o3d.points = o3d.utility.Vector3dVector(src_pcd)
+            src_pcd_o3d.paint_uniform_color(c_red)
+            tgt_pcd_o3d = o3d.geometry.PointCloud()
+            tgt_pcd_o3d.points = o3d.utility.Vector3dVector(tgt_pcd)
+            tgt_pcd_o3d.paint_uniform_color(c_blue)
+            o3d.visualization.draw_geometries([src_pcd_o3d, tgt_pcd_o3d, src_wrapped_o3d])
 
 
         # add gaussian noise
         if self.data_augmentation:
+            print("Augmenting...")
             # rotate the point cloud
             euler_ab = np.random.rand(3) * np.pi * 2 / self.rot_factor  # anglez, angley, anglex
             rot_ab = Rotation.from_euler('zyx', euler_ab).as_matrix()
@@ -148,11 +158,14 @@ class _Plants(Dataset):
 
 
         if debug:
-            # wrapp_src = (np.matmul(rot, src_pcd.T)+ trans).T
             src_wrapped = (np.matmul( rot, src_pcd_deformed.T ) + trans ).T
-            mlab.points3d(src_wrapped[:, 0], src_wrapped[:, 1], src_wrapped[:, 2], scale_factor=scale_factor, color=c_red)
-            mlab.points3d(tgt_pcd[:, 0], tgt_pcd[:, 1], tgt_pcd[:, 2], scale_factor=scale_factor, color=c_blue)
-            mlab.show()
+            src_wrapped_o3d = o3d.geometry.PointCloud()
+            src_wrapped_o3d.points = o3d.utility.Vector3dVector(src_wrapped)
+            src_wrapped_o3d.paint_uniform_color(c_red)
+            tgt_pcd_o3d = o3d.geometry.PointCloud()
+            tgt_pcd_o3d.points = o3d.utility.Vector3dVector(tgt_pcd)
+            tgt_pcd_o3d.paint_uniform_color(c_blue)
+            o3d.visualization.draw_geometries([tgt_pcd_o3d, src_wrapped_o3d])
 
 
         if (trans.ndim == 1):
@@ -166,4 +179,4 @@ class _Plants(Dataset):
 
 
         #R * ( Ps + flow ) + t  = Pt
-        return self.entries[index], src_pcd, tgt_pcd, src_feats, tgt_feats, correspondences, rot, trans, s2t_flow, metric_index, depth_paths, cam_intrin
+        return self.entries[index], src_pcd, tgt_pcd, src_feats, tgt_feats, correspondences, rot, trans, center, s2t_flow, metric_index, depth_paths, cam_intrin

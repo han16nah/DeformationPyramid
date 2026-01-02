@@ -73,7 +73,12 @@ class VolumetricPositionEncoding(nn.Module):
             raise ValueError(f"[voxelize()] returned shape {vox.shape}, input was {XYZ.shape}")
         
         x_position, y_position, z_position = vox[..., 0:1], vox[...,1:2], vox[...,2:3]
-        div_term = torch.exp( torch.arange(0, self.feature_dim // 3, 2, dtype=torch.float, device=XYZ.device) *  (-math.log(10000.0) / (self.feature_dim // 3)))
+        #div_term = torch.exp( torch.arange(0, self.feature_dim // 3, 2, dtype=torch.float, device=XYZ.device) *  (-math.log(10000.0) / (self.feature_dim // 3)))
+        freq_dim = max(self.feature_dim // 3, 1)  # prevent zero dim
+        div_term = torch.exp(
+            torch.arange(0, freq_dim, 2, dtype=torch.float, device=XYZ.device)
+            * (-math.log(10000.0) / freq_dim)
+        )
         div_term = div_term.view( 1,1, -1) # [1, 1, d//6]
 
         sinx = torch.sin(x_position * div_term) # [B, N, d//6]
