@@ -84,7 +84,7 @@ class Trainer(object):
 
     def _load_matcher(self, resume):
         if os.path.isfile(resume):
-            state = torch.load(resume)
+            state = torch.load(resume, weights_only=True)
             self.matcher.load_state_dict(state['state_dict'])
             print("loaded matcher weights from", resume)
         else:
