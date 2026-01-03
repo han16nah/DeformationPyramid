@@ -96,26 +96,6 @@ class VolumetricPositionEncoding(nn.Module):
         else:
             raise KeyError()
 
-        # Create per-point mask: [B, N]
-        #mask = (XYZ.abs().sum(dim=-1) > 0).float()
-
-        #if self.pe_type == 'sinusoidal':
-        #    # Expand to [B, N, 1]
-        #    mask = mask.unsqueeze(-1)  
-        #elif self.pe_type == 'rotary':
-        #    # Expand to [B, N, 1, 1] to broadcast across [F,2]
-        #    mask = mask.unsqueeze(-1).unsqueeze(-1)
-        #else:
-        #    raise KeyError(f"Unknown pe_type: {self.pe_type}")
-        
-        # eps normalization
-        #eps = 1e-6
-        #norm = torch.norm(position_code, dim=-1, keepdim=True)
-        #position_code = position_code / (norm + eps)
-
-        # SAFELY MASK OUT EMPTY FRAMES
-        #position_code = position_code * mask
-
         if position_code.requires_grad:
             position_code = position_code.detach()
 

@@ -128,8 +128,5 @@ class VolumetricPositionEncoding(nn.Module):
             print("NaN in position_code after masking!")
         #print("NaNs?", torch.isnan(position_code).any())
 
-        if position_code.requires_grad:
-            position_code = position_code.detach()
-
 
         return position_code
