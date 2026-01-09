@@ -3,6 +3,7 @@ import time
 import copy
 import open3d as o3d
 import numpy as np
+import matplotlib.pyplot as plt
 
 from skimage import io
 
@@ -47,6 +48,51 @@ def visualize_pcds(src_pcd=None, tgt_pcd=None, warped_pcd=None, rigidity=None):
     mlab.show()
 
 
+def visualize_pcds_o3d(src_pcd=None, tgt_pcd=None, warped_pcd=None, rigidity=None):
+    import open3d as o3d
+    c_red = (224. / 255., 0 / 255., 125 / 255.)
+    c_pink = (224. / 255., 75. / 255., 232. / 255.)
+    c_blue = (0. / 255., 0. / 255., 255. / 255.)
+    
+    vis_list = []
+    if src_pcd is not None:
+        if torch.is_tensor(src_pcd):
+            src_pcd = src_pcd.detach().cpu().numpy()
+        s_pcd = o3d.geometry.PointCloud()
+        s_pcd.points = o3d.utility.Vector3dVector(src_pcd)
+        s_pcd.paint_uniform_color(c_red)
+        vis_list.append(s_pcd)
+
+    if warped_pcd is not None:
+        if torch.is_tensor(warped_pcd):
+            warped_pcd = warped_pcd.detach().cpu().numpy()
+        w_pcd = o3d.geometry.PointCloud()
+        w_pcd.points = o3d.utility.Vector3dVector(warped_pcd)
+        w_pcd.paint_uniform_color(c_pink)
+        vis_list.append(w_pcd)
+
+    if tgt_pcd is not None:
+        if torch.is_tensor(tgt_pcd):
+            tgt_pcd = tgt_pcd.detach().cpu().numpy()
+        t_pcd = o3d.geometry.PointCloud()
+        t_pcd.points = o3d.utility.Vector3dVector(tgt_pcd)
+        t_pcd.paint_uniform_color(c_blue)
+        vis_list.append(t_pcd)
+
+    if rigidity is not None:
+        pcd2 = warped_pcd + 1
+        rigidity = rigidity.detach().cpu().numpy()
+        rmin, rmax = rigidity.min(), rigidity.max()
+        rigidity = (rigidity - rmin) / (rmax - rmin + 1e-6)
+        # color by rigidity
+        pcd2_pcd = o3d.geometry.PointCloud()
+        pcd2_pcd.points = o3d.utility.Vector3dVector(pcd2)
+        colors = plt.get_cmap('jet')(rigidity)[:, :3]
+        pcd2_pcd.colors = o3d.utility.Vector3dVector(colors)
+
+    o3d.visualization.draw_geometries(vis_list)
+
+
 def visualize_flows(src_pcd, warped_pcd, tgt_pcd):
     import mayavi.mlab as mlab
     fig = mlab.figure(size=(1000, 1000), bgcolor=(1, 1, 1))
@@ -74,6 +120,52 @@ def visualize_flows(src_pcd, warped_pcd, tgt_pcd):
     mlab.quiver3d(src_pcd[:, 0], src_pcd[ :, 1], src_pcd[ :, 2],
                 flow[:, 0] , flow[:, 1] , flow[:, 2], scale_factor=1, color=(0, 0, 0))
     mlab.show()
+
+
+def visualize_flows_o3d(src_pcd, warped_pcd, tgt_pcd):
+    import open3d as o3d
+    c_black = (0, 0, 0)
+    c_red = (224. / 255., 0 / 255., 125 / 255.)
+    c_pink = (224. / 255., 75. / 255., 232. / 255.)
+    c_blue = (0. / 255., 0. / 255., 255. / 255.)
+    c_green = (0. / 255., 255. / 255., 0. / 255.)
+    c_gray1 = (100. / 255., 100. / 255., 100. / 255.)
+
+    vis_list = []
+    if src_pcd is not None:
+        if type(src_pcd) == torch.Tensor:
+            src_pcd = src_pcd.detach().cpu().numpy()
+        src_pcd_o3d = o3d.geometry.PointCloud()
+        src_pcd_o3d.points = o3d.utility.Vector3dVector(src_pcd)
+        src_pcd_o3d.paint_uniform_color(c_red)
+        vis_list.append(src_pcd_o3d)
+    if tgt_pcd is not None:
+        if type(tgt_pcd) == torch.Tensor:
+            tgt_pcd = tgt_pcd.detach().cpu().numpy()
+        tgt_pcd_o3d = o3d.geometry.PointCloud()
+        tgt_pcd_o3d.points = o3d.utility.Vector3dVector(tgt_pcd)
+        tgt_pcd_o3d.paint_uniform_color(c_black)
+        vis_list.append(tgt_pcd_o3d)
+    if warped_pcd is not None:
+        if type(warped_pcd) == torch.Tensor:
+            warped_pcd = warped_pcd.detach().cpu().numpy()
+        warped_pcd_o3d = o3d.geometry.PointCloud()
+        warped_pcd_o3d.points = o3d.utility.Vector3dVector(warped_pcd)
+        warped_pcd_o3d.paint_uniform_color(c_green)
+        vis_list.append(warped_pcd_o3d)
+    flow = warped_pcd - src_pcd
+    # create lines for flow
+    lines = []
+    colors = []
+    for i in range(len(src_pcd)):
+        lines.append([i, i + len(src_pcd)])
+        colors.append(c_gray1)
+    line_set = o3d.geometry.LineSet()
+    line_set.points = o3d.utility.Vector3dVector(np.vstack((src_pcd, src_pcd + flow)))
+    line_set.lines = o3d.utility.Vector2iVector(lines)
+    line_set.colors = o3d.utility.Vector3dVector(colors)
+    vis_list.append(line_set)
+    o3d.visualization.draw_geometries(vis_list)
 
 
 def visualize_pcds_list(pcd_list ):

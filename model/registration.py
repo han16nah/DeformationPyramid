@@ -15,7 +15,7 @@ from .loss import  arap_cost, landmark_cost, compute_truncated_chamfer_distance,
 from .nets import *
 
 sys.path.append("../")
-from utils.vis import visualize_pcds, visualize_flows
+from utils.vis import visualize_pcds, visualize_flows, visualize_pcds_o3d, visualize_flows_o3d
 
 
 BCE = nn.BCELoss()
@@ -99,7 +99,7 @@ class Registration():
         self.src_pcd = src.to(self.device)
         self.tgt_pcd = tgt.to(self.device)
 
-        # visualize_pcds( src_pcd=self.src_pcd, tgt_pcd=self.tgt_pcd)
+        # visualize_pcds_o3d( src_pcd=self.src_pcd, tgt_pcd=self.tgt_pcd)
         self.landmarks = landmarks
 
 
@@ -143,7 +143,7 @@ class Registration():
         self.src_pcd = self.src_pcd.to(self.device)
 
         if visualize:
-            visualize_pcds(src_pcd = self.src_pcd, tgt_pcd= self.tgt_pcd)
+            visualize_pcds_o3d(src_pcd = self.src_pcd, tgt_pcd= self.tgt_pcd)
 
 
         # cancel global translation
@@ -254,8 +254,8 @@ class Registration():
         NDP.gradient_setup(optimized_level=-1)
         warped_pcd, data = NDP.warp(src_pcd)
         if visualize:
-             visualize_pcds(tgt_pcd=tgt_pcd, warped_pcd=warped_pcd, rigidity=data[level][1])
-             visualize_flows(src_pcd, warped_pcd, tgt_pcd)
+             visualize_pcds_o3d(tgt_pcd=tgt_pcd, warped_pcd=warped_pcd, rigidity=data[level][1])
+             visualize_flows_o3d(src_pcd, warped_pcd, tgt_pcd)
 
         warped_pcd = warped_pcd + tgt_mean
 
