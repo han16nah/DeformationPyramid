@@ -334,7 +334,7 @@ class NeCoLoss(nn.Module):
             #inlier_mask.append(inlier)
 
 
-        return  inlier_mask, inlier_rate, match_status
+        return  inlier_mask, inlier_rate # , match_status
 
 
 
