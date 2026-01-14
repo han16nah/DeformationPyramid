@@ -65,6 +65,59 @@ def viz_coarse_nn_correspondence_mayavi(s_pc, t_pc, good_c, bad_c, f_src_pcd=Non
 
     mlab.show()
 
+def viz_coarse_nn_correspondence_open3d(s_pc, t_pc, good_c, bad_c, f_src_pcd=None, f_tgt_pcd=None):
+    c_red = (224. / 255., 0 / 255., 0 / 255.)
+    c_pink = (224. / 255., 75. / 255., 232. / 255.)
+    c_blue = (0. / 255., 0. / 255., 255. / 255.)
+    c_green = (0. / 255., 255. / 255., 0. / 255.)
+    c_gray1 = (255 / 255., 255 / 255., 125 / 255.)
+    c_gray2 = (125. / 255., 125. / 255., 255. / 255.)
+    if f_src_pcd is not None:
+        src_pcd_o3d = o3d.geometry.PointCloud()
+        src_pcd_o3d.points = o3d.utility.Vector3dVector(f_src_pcd)
+        src_pcd_o3d.paint_uniform_color(c_gray1)
+    else:
+        src_pcd_o3d = o3d.geometry.PointCloud()
+        src_pcd_o3d.points = o3d.utility.Vector3dVector(s_pc)
+        src_pcd_o3d.paint_uniform_color(c_gray1)
+    if f_tgt_pcd is not None:
+        tgt_pcd_o3d = o3d.geometry.PointCloud()
+        tgt_pcd_o3d.points = o3d.utility.Vector3dVector(f_tgt_pcd)
+        tgt_pcd_o3d.paint_uniform_color(c_gray2)
+    else:
+        tgt_pcd_o3d = o3d.geometry.PointCloud()
+        tgt_pcd_o3d.points = o3d.utility.Vector3dVector(t_pc)
+        tgt_pcd_o3d.paint_uniform_color(c_gray2)
+    
+    s_cpts_god = s_pc[good_c[0]]
+    t_cpts_god = t_pc[good_c[1]]
+    flow_good = t_cpts_god - s_cpts_god
+
+    s_cpts_bd = s_pc[bad_c[0]]
+    t_cpts_bd = t_pc[bad_c[1]]
+    flow_bad = t_cpts_bd - s_cpts_bd
+
+    def match_draw(s_cpts, t_cpts, flow, color):
+        s_cpts_o3d = o3d.geometry.PointCloud()
+        s_cpts_o3d.points = o3d.utility.Vector3dVector(s_cpts)
+        s_cpts_o3d.paint_uniform_color(c_blue)
+        t_cpts_o3d = o3d.geometry.PointCloud()
+        t_cpts_o3d.points = o3d.utility.Vector3dVector(t_cpts)
+        t_cpts_o3d.paint_uniform_color(c_pink)
+        lines = []
+        colors = []
+        for i in range(len(s_cpts)):
+            lines.append([i, i + len(s_cpts)])
+            colors.append(color)
+        line_set = o3d.geometry.LineSet()
+        line_set.points = o3d.utility.Vector3dVector(np.vstack((s_cpts, t_cpts)))
+        line_set.lines = o3d.utility.Vector2iVector(lines)
+        line_set.colors = o3d.utility.Vector3dVector(colors)
+        return s_cpts_o3d, t_cpts_o3d, line_set
+
+    s_cpts_god_o3d, t_cpts_god_o3d, line_set_god = match_draw(s_cpts_god, t_cpts_god, flow_good, c_green)
+    s_cpts_bd_o3d, t_cpts_bd_o3d, line_set_bd = match_draw(s_cpts_bd, t_cpts_bd, flow_bad, c_red)
+    o3d.visualization.draw_geometries([src_pcd_o3d, tgt_pcd_o3d, s_cpts_god_o3d, t_cpts_god_o3d, line_set_god, s_cpts_bd_o3d, t_cpts_bd_o3d, line_set_bd])
 
 
 def correspondence_viz(src_raw, tgt_raw, src_pcd, tgt_pcd, corrs, inlier_mask, max=200):
@@ -84,6 +137,33 @@ def correspondence_viz(src_raw, tgt_raw, src_pcd, tgt_pcd, corrs, inlier_mask, m
     tgt_raw = tgt_raw + offset
 
     viz_coarse_nn_correspondence_mayavi(src_pcd, tgt_pcd, good_c, bad_c, src_raw, tgt_raw, scale_factor=0.07)
+
+
+def correspondence_viz_open3d(src_raw, tgt_raw, src_pcd, tgt_pcd, corrs, inlier_mask, max=1000):
+    # convert to numpy in case tensors
+    src_raw = to_array(src_raw)
+    tgt_raw = to_array(tgt_raw)
+    src_pcd = to_array(src_pcd)
+    tgt_pcd = to_array(tgt_pcd)
+    corrs = to_array(corrs)
+    inlier_mask = to_array(inlier_mask)
+    
+    #perm = np.random.permutation(corrs.shape[1])
+    #ind = perm[:max]
+
+    #corrs = corrs[:, ind]
+    #inlier_mask = inlier_mask[ind]
+
+    good_c = corrs[:, inlier_mask]
+    bad_c = corrs[:, ~inlier_mask]
+
+    offset = np.array([[1.45, 0, 0]])
+    # src_pcd = src_pcd + offset
+    # src_raw = src_raw + offset
+    tgt_pcd = tgt_pcd + offset
+    tgt_raw = tgt_raw + offset
+
+    viz_coarse_nn_correspondence_open3d(src_pcd, tgt_pcd, good_c, bad_c, src_raw, tgt_raw)
 
 
 def fmr_wrt_distance(data,split,inlier_ratio_threshold=0.05):
