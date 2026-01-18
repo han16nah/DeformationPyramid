@@ -1,4 +1,4 @@
-    from multiprocessing.util import debug
+from multiprocessing.util import debug
 import torch
 import yaml
 from easydict import EasyDict as edict
@@ -44,7 +44,7 @@ class Landmark_Model ():
 
         self.kpfcn_config = config['kpfcn_config']
         # for debugging
-        self.vis = True
+        self.vis=False
 
 
     def inference(self, inputs, reject_outliers=True, inlier_thr=0.8, timer=None):
