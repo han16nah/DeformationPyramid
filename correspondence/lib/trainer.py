@@ -268,6 +268,8 @@ class Trainer(object):
 
                 if self.config.do_valid:
                     stats_meter = self.inference_one_epoch(epoch, 'val')
+                    # save each epoch (named by epoch number)
+                    self._snapshot(epoch)
                     if stats_meter['loss'].avg < self.best_loss:
                         self.best_loss = stats_meter['loss'].avg
                         self._snapshot(epoch, 'best_loss')

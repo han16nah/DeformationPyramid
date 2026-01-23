@@ -46,24 +46,24 @@ pretrain: ''
 
 # optimiser:
 optimizer: SGD
-max_epoch: 1500
+max_epoch: 20
 lr: 0.001
 weight_decay: 0.000001
 momentum: 0.93
 scheduler: ExpLR
 scheduler_gamma: 0.95
 scheduler_freq: 1
-iter_size: 1
+iter_size: 4
 
 
 
 #dataset:
 dataset: plants
 folder: S5
-batch_size: 8
-num_workers: 16
+batch_size: 2
+num_workers: 8
 augment_noise: 0.002
-data_root: data_plants/S5
+data_root: ../data_plants/S5
 split: {
   "train": subsets/train,
   "val": subsets/val,
