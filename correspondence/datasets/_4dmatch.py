@@ -71,6 +71,8 @@ class _4DMatch(Dataset):
                 metric_index = entry['metric_index'].squeeze()
             else:
                 metric_index = None
+            all_points = np.vstack([src_pcd, tgt_pcd])
+            center = all_points.mean(axis=0, keepdims=True)
 
         if self.load_raw_depth:
             entry_name = self.entries[index]
@@ -150,7 +152,7 @@ class _4DMatch(Dataset):
 
 
         #R * ( Ps + flow ) + t  = Pt
-        return src_pcd, tgt_pcd, src_feats, tgt_feats, correspondences, rot, trans, s2t_flow, metric_index, depth_paths, cam_intrin
+        return self.entries[index], src_pcd, tgt_pcd, src_feats, tgt_feats, correspondences, rot, trans, center, s2t_flow, metric_index, depth_paths, cam_intrin
 
 
 

@@ -12,6 +12,7 @@ model:
   sigma_spat: &sigma_spat 0.1
   spatial_consistency_check: True
 
+use_depth: False
 
 train_loss:
   focal_alpha: 0.25
@@ -46,24 +47,24 @@ pretrain: ''
 
 # optimiser:
 optimizer: SGD
-max_epoch: 1500
+max_epoch: 2
 lr: 0.001
 weight_decay: 0.000001
 momentum: 0.93
 scheduler: ExpLR
 scheduler_gamma: 0.95
 scheduler_freq: 1
-iter_size: 1
+iter_size: 4
 
 
 
 #dataset:
 dataset: 4dmatch
 folder: deploy
-batch_size: 8
-num_workers: 16
+batch_size: 2
+num_workers: 8
 augment_noise: 0.002
-data_root: /path/to/4DMatch
+data_root: ../data/
 split: {
   "train": split/train,
   "val": split/4DLoMatch,
