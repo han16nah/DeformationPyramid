@@ -54,5 +54,5 @@ data_root : "data_plants/S5/subsets/"
 split: { 'test': "test" }
 
 #experiment
-exp_dir :  !join [ *inlier_thr  ]
+exp_dir :  !join [ reject, *reject_outliers, ithr, *inlier_thr, 'wcd', *w_cd ]
 folder: LNDP_4DMatch_on_S5
