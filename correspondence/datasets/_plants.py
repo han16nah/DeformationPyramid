@@ -38,7 +38,7 @@ class _Plants(Dataset):
 
         self.rot_factor = 1.
         self.augment_noise = config.augment_noise
-        self.max_points = 40_000  # 30000 TODO: or like in lepard 40_000 - disable downsampling for test though to get full res results at inference
+        self.max_points = 500_000  # 40_000 - disable downsampling for inference
 
         # self.overlap_radius = 0.0375  # does not seem to be needed for this dataset
 
