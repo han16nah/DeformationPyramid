@@ -87,7 +87,7 @@ if __name__ == "__main__":
         #config.split['test'] = split
 
         stats_meter = None
-        test_set = _Plants(config, 'test', data_augmentation=False)
+        test_set = _Plants(config, 'test', data_augmentation=False, check_computed=config['snapshot_dir'] if args.write else None)
         test_loader, _ = get_dataloader(test_set, config, shuffle=False)
 
 

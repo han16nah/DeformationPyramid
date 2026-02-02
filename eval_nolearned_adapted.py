@@ -66,7 +66,7 @@ if __name__ == "__main__":
         config.split['test'] = benchmark
 
         # D = _4DMatch( config, 'test', data_augmentation=False)
-        D = _Plants(config, 'test', data_augmentation=False)
+        D = _Plants(config, 'test', data_augmentation=False, check_computed=config['snapshot_dir'] if args.write else None)
         logger = Logger(  os.path.join( config.snapshot_dir, benchmark+".log" ))
 
         stats_meter = None
