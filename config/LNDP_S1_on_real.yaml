@@ -3,7 +3,7 @@ deformation_model: NDP
 
 
 use_ldmk: True
-ldmk_config: "./correspondence/configs/correspondence.yaml"
+ldmk_config: "./correspondence/configs/correspondence_plants_S1.yaml"
 
 num_workers: 4
 batch_size: 1
@@ -17,7 +17,6 @@ w_cd: &w_cd 0.001
 w_reg: &w_reg 0.0005
 
 trunc_cd: &trunc_cd 0.4
-
 
 
 # motion representation
@@ -50,9 +49,9 @@ act_fn: relu
 
 
 #dataset
-data_root : "data_plants/S5/subsets/"
+data_root : "data_plants/real/subsets"
 split: { 'test': "test" }
 
 #experiment
 exp_dir :  !join [ reject, *reject_outliers, ithr, *inlier_thr, 'wcd', *w_cd, 'trunccd', *trunc_cd, 'wreg', *w_reg ]
-folder: LNDP_4DMatch_on_S5
+folder: LNDP_S1_on_real
