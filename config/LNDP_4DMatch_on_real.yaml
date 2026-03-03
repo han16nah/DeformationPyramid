@@ -5,7 +5,7 @@ deformation_model: NDP
 use_ldmk: True
 ldmk_config: "./correspondence/configs/correspondence.yaml"
 
-num_workers: 0
+num_workers: 4
 batch_size: 1
 augment_noise: False
 
@@ -13,10 +13,10 @@ augment_noise: False
 use_depth: False
 
 w_ldmk: 1
-w_cd: &w_cd 0.0
-w_reg: &w_reg 0.0
+w_cd: &w_cd 0.001
+w_reg: &w_reg 0.0005
 
-trunc_cd : 0.25
+trunc_cd: &trunc_cd 0.4
 
 
 
@@ -34,7 +34,7 @@ break_threshold_ratio: 0.001
 
 
 # threshold of inlier match
-inlier_thr : &inlier_thr 0.3  # check threshold
+inlier_thr : &inlier_thr 0.4
 reject_outliers: &reject_outliers True
 
 samples: &samples 2000
@@ -50,9 +50,9 @@ act_fn: relu
 
 
 #dataset
-data_root : "data_plants/plants_S1-single/partitioned-final"
+data_root : "data_plants/real/subsets"
 split: { 'test': "test" }
 
 #experiment
-exp_dir :  !join [ *inlier_thr  ]
-folder: plants_S1-single_pretrained2
+exp_dir :  !join [ reject, *reject_outliers, ithr, *inlier_thr, 'wcd', *w_cd, 'trunccd', *trunc_cd, 'wreg', *w_reg ]
+folder: LNDP_4DMatch_on_real
